@@ -1,0 +1,38 @@
+version: '3'
+services:
+  neo4j:
+    image: neo4j:3.5.12
+    container_name: 'neo4j'
+    volumes: 
+      - './.docker-env/neo4j:/data'
+    networks: 
+      - backend
+    ports: 
+      - '8080:7474' #http
+      - '7687:7687' #bolt
+  mongo:
+    image: mongo:4.2
+    container_name: 'mongo'
+    volumes: 
+      - './.docker-env/mongodb:/data'
+    networks: 
+      - backend
+    ports: 
+      - '27017:27017'
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: 'admin'
+      MONGO_INITDB_ROOT_PASSWORD: 'pass'
+  mongo-express:
+    image: mongo-express
+    container_name: 'mongo-express'
+    depends_on: 
+      - mongo
+    networks: 
+      - backend
+    ports: 
+      - '8081:8081'
+    environment: 
+      ME_CONFIG_MONGODB_ADMINUSERNAME: 'admin'
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 'pass'
+networks: 
+  backend:
