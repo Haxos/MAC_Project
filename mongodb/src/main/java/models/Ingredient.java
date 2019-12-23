@@ -2,7 +2,7 @@ package models;
 
 public class Ingredient {
     private Unit _unit;
-    private double _quantity;
+    private double _quantity = 1.0;
     private String _name;
 
     public Ingredient(double quantity, String name) {
