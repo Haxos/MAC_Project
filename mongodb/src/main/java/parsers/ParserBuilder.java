@@ -1,6 +1,8 @@
 package parsers;
 
+import models.Ingredient;
 import models.Recipe;
+import models.Unit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class ParserBuilder {
@@ -23,17 +26,16 @@ public class ParserBuilder {
 
             public void parse() throws IOException {
                 _recipes = new ArrayList<>();
-                //TODO: do parsing
+
                 byte[] encoded = Files.readAllBytes(Paths.get(_path));
                 String content = new String(encoded);
                 JSONObject collection = new JSONObject(content);
-                JSONObject element;
-                Recipe recipe;
                 int newId = 0;
                 for (String key : collection.keySet()) {
-                    element = (JSONObject) collection.get(key);
+                    JSONObject element = (JSONObject) collection.get(key);
+                    ++newId;
 
-                    recipe = new Recipe(newId, element.get("name").toString());
+                    Recipe recipe = new Recipe(newId, element.get("name").toString());
                     recipe.setSource(element.get("source").toString());
                     recipe.setPreptime(Integer.parseInt(element.get("preptime").toString()));
                     recipe.setWaittime(Integer.parseInt(element.get("waittime").toString()));
@@ -49,9 +51,34 @@ public class ParserBuilder {
                     recipe.setProtein(Integer.parseInt(element.get("protein").toString()));
                     recipe.setInstructions(element.get("instructions").toString());
 
-                    //TODO: ingredients parse
+                    JSONArray ingredientsJSONArray = element.getJSONArray("ingredients");
+                    for (Object ingredientObject : ingredientsJSONArray) {
+                        String[] ingredientParsed = ingredientObject.toString().split(" ");
+                        Ingredient ingredient;
+                        try {
+                            double quantity = Double.parseDouble(ingredientParsed[0]);
+                            int startPos = 2;
+                            Unit unit = Unit.getUnitFromString(ingredientParsed[1]);
 
-                    //TODO: tags
+                            if(unit == Unit.NONE) {
+                                startPos = 1;
+                            }
+
+                            ingredient = new Ingredient(
+                                    unit,
+                                    quantity,
+                                    String.join(" ", Arrays.copyOfRange(ingredientParsed, startPos, ingredientParsed.length))
+                            );
+                        } catch (Exception ignored) {
+                            ingredient = new Ingredient(ingredientObject.toString());
+                        }
+                        recipe.addIngredient(ingredient);
+                    }
+
+                    JSONArray tagsJSONArray = element.getJSONArray("tags");
+                    for (Object tagObject : tagsJSONArray) {
+                        recipe.addTag(tagObject.toString());
+                    }
                 }
             }
         };

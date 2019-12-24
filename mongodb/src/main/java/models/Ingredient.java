@@ -5,6 +5,10 @@ public class Ingredient {
     private double _quantity = 1.0;
     private String _name;
 
+    public Ingredient(String name) {
+        this(1, name);
+    }
+
     public Ingredient(double quantity, String name) {
         this(Unit.NONE, quantity, name);
     }
@@ -19,9 +23,13 @@ public class Ingredient {
         return _unit;
     }
 
+    public void setUnit(Unit unit) { this._unit = unit; }
+
     public double getQuantity() {
         return _quantity;
     }
+
+    public void setQuantity(double quantity) { this._quantity = quantity; }
 
     public String getName() {
         return _name;
