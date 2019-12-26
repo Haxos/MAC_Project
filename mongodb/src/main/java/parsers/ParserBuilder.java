@@ -1,8 +1,10 @@
 package parsers;
 
+import com.mongodb.client.MongoCollection;
 import models.Ingredient;
 import models.Recipe;
 import models.Unit;
+import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -79,22 +81,55 @@ public class ParserBuilder {
                     for (Object tagObject : tagsJSONArray) {
                         recipe.addTag(tagObject.toString());
                     }
+
+                    _recipes.add(recipe);
                 }
             }
         };
     }
 
-    public static MongoDBParser MongoDBOutputBuilder(final String path) {
+    public static MongoDBParser MongoDBOutputBuilder() {
         return new MongoDBParser() {
             private Collection<Recipe> _recipes;
-            private final String _path = path;
+            private Collection<Document> _documents;
+
+            public Collection<Document> getDocuments() {
+                return _documents;
+            }
 
             public void setRecipes(Collection<Recipe> recipes) {
                 this._recipes = recipes;
             }
 
             public void compose() throws NullPointerException, IOException {
-                //TODO: do composing
+                _documents = new ArrayList<>();
+                for (Recipe recipe: _recipes) {
+                    Collection<String> ingredientsString = new ArrayList<>();
+
+                    for(Ingredient ingredient: recipe.getIngredients()) {
+                        ingredientsString.add(ingredient.toString());
+                    }
+
+                    Document document = new Document()
+                            .append("name", recipe.getName())
+                            .append("source", recipe.getSource())
+                            .append("preptime", recipe.getPreptime())
+                            .append("waittime", recipe.getWaittime())
+                            .append("cooktime", recipe.getCooktime())
+                            .append("servings", recipe.getServings())
+                            .append("comments", recipe.getComments())
+                            .append("calories", recipe.getCalories())
+                            .append("fat", recipe.getFat())
+                            .append("satfat", recipe.getSatfat())
+                            .append("carbs", recipe.getCarbs())
+                            .append("fiber", recipe.getFiber())
+                            .append("sugar", recipe.getSugar())
+                            .append("protein", recipe.getProtein())
+                            .append("instructions", recipe.getInstructions())
+                            .append("ingredients", ingredientsString)
+                            .append("tags", recipe.getTags());
+                    _documents.add(document);
+                }
             }
         };
     }

@@ -34,4 +34,8 @@ public class Ingredient {
     public String getName() {
         return _name;
     }
+
+    public String toString() {
+        return this._quantity + " " + this._unit + " " + this._name;
+    }
 }

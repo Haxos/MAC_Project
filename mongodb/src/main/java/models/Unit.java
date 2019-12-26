@@ -5,11 +5,36 @@ import java.util.regex.*;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 public enum Unit {
-    NONE,
-    SPOON,
-    CUP,
-    POUND,  // lb
-    ONCE;   // oz
+    NONE {
+        @Override
+        public String toString() {
+            return "";
+        }
+    },
+    SPOON {
+        @Override
+        public String toString() {
+            return "spoon";
+        }
+    },
+    CUP {
+        @Override
+        public String toString() {
+            return "cup";
+        }
+    },
+    POUND {
+        @Override
+        public String toString() {
+            return "lb";
+        }
+    },  // lb
+    ONCE {
+        @Override
+        public String toString() {
+            return "oz";
+        }
+    };   // oz
 
     public static Unit getUnitFromString(String s) {
         Pattern spoonPattern = Pattern.compile("(sp(oon)?)$", CASE_INSENSITIVE);
