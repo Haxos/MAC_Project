@@ -18,7 +18,7 @@ public class Main {
     private final static String DATABASE_NAME = "hungry-me";
     private final static String DATABASE_AUTH = "admin";
     private final static String COLLECTION_NAME = "recipes";
-    private final static String HOST_SITE = "localhost";
+    private final static String HOST_SITE = "192.168.99.101";
     private final static int HOST_PORT = 27017;
 
     public static void main(String[] args) {
