@@ -8,7 +8,7 @@ public enum Unit {
     NONE {
         @Override
         public String toString() {
-            return "";
+            return "unit";
         }
     },
     SPOON {

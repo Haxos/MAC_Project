@@ -104,10 +104,14 @@ public class ParserBuilder {
             public void compose() throws NullPointerException, IOException {
                 _documents = new ArrayList<>();
                 for (Recipe recipe: _recipes) {
-                    Collection<String> ingredientsString = new ArrayList<>();
+                    Collection<Document> ingredientsCollection = new ArrayList<>();
 
                     for(Ingredient ingredient: recipe.getIngredients()) {
-                        ingredientsString.add(ingredient.toString());
+                        Document ingredientDocument = new Document()
+                                            .append("unit", ingredient.getUnit().toString())
+                                            .append("quantity", ingredient.getQuantity())
+                                            .append("name", ingredient.getName());
+                        ingredientsCollection.add(ingredientDocument);
                     }
 
                     Document document = new Document()
@@ -126,7 +130,7 @@ public class ParserBuilder {
                             .append("sugar", recipe.getSugar())
                             .append("protein", recipe.getProtein())
                             .append("instructions", recipe.getInstructions())
-                            .append("ingredients", ingredientsString)
+                            .append("ingredients", ingredientsCollection)
                             .append("tags", recipe.getTags());
                     _documents.add(document);
                 }
