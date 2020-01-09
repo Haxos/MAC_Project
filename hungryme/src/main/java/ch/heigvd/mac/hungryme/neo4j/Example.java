@@ -1,3 +1,5 @@
+package ch.heigvd.mac.hungryme.neo4j;
+
 import org.neo4j.driver.v1.*;
 
 import static org.neo4j.driver.v1.Values.parameters;

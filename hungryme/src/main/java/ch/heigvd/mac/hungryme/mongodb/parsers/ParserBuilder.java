@@ -1,9 +1,8 @@
 package ch.heigvd.mac.hungryme.mongodb.parsers;
 
-import com.mongodb.client.MongoCollection;
-import models.Ingredient;
-import models.Recipe;
-import models.Unit;
+import ch.heigvd.mac.hungryme.models.Ingredient;
+import ch.heigvd.mac.hungryme.models.Recipe;
+import ch.heigvd.mac.hungryme.models.Unit;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,21 +21,21 @@ public class ParserBuilder {
             private final String _path = path;
 
             public Collection<Recipe> getRecipes() {
-                return _recipes;
+                return this._recipes;
             }
 
             public void parse() throws IOException {
-                _recipes = new ArrayList<>();
+                this._recipes = new ArrayList<>();
 
-                byte[] encoded = Files.readAllBytes(Paths.get(_path));
+                byte[] encoded = Files.readAllBytes(Paths.get(this._path));
                 String content = new String(encoded);
                 JSONObject collection = new JSONObject(content);
-                int newId = 0;
+                Integer newId = 0;
                 for (String key : collection.keySet()) {
                     JSONObject element = (JSONObject) collection.get(key);
                     ++newId;
 
-                    Recipe recipe = new Recipe(newId, element.get("name").toString());
+                    Recipe recipe = new Recipe(newId.toString(), element.get("name").toString());
                     recipe.setSource(element.get("source").toString());
                     recipe.setPreptime(Integer.parseInt(element.get("preptime").toString()));
                     recipe.setWaittime(Integer.parseInt(element.get("waittime").toString()));
@@ -82,7 +80,7 @@ public class ParserBuilder {
                         recipe.addTag(tagObject.toString());
                     }
 
-                    _recipes.add(recipe);
+                    this._recipes.add(recipe);
                 }
             }
         };
@@ -94,16 +92,16 @@ public class ParserBuilder {
             private Collection<Document> _documents;
 
             public Collection<Document> getDocuments() {
-                return _documents;
+                return this._documents;
             }
 
             public void setRecipes(Collection<Recipe> recipes) {
                 this._recipes = recipes;
             }
 
-            public void compose() throws NullPointerException, IOException {
-                _documents = new ArrayList<>();
-                for (Recipe recipe: _recipes) {
+            public void compose() throws NullPointerException {
+                this._documents = new ArrayList<>();
+                for (Recipe recipe: this._recipes) {
                     Collection<Document> ingredientsCollection = new ArrayList<>();
 
                     for(Ingredient ingredient: recipe.getIngredients()) {
@@ -132,7 +130,7 @@ public class ParserBuilder {
                             .append("instructions", recipe.getInstructions())
                             .append("ingredients", ingredientsCollection)
                             .append("tags", recipe.getTags());
-                    _documents.add(document);
+                    this._documents.add(document);
                 }
             }
         };

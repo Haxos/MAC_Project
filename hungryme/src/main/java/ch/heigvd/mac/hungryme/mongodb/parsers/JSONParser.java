@@ -1,6 +1,6 @@
 package ch.heigvd.mac.hungryme.mongodb.parsers;
 
-import models.Recipe;
+import ch.heigvd.mac.hungryme.models.Recipe;
 
 import java.io.IOException;
 import java.text.ParseException;

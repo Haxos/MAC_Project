@@ -1,18 +1,26 @@
+package ch.heigvd.mac.hungryme.telegram;
+
+import ch.heigvd.mac.hungryme.models.Recipe;
+import ch.heigvd.mac.hungryme.mongodb.MongoDBController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import javax.swing.text.html.HTML;
-import java.util.ArrayList;
-
 public class HungryMeBot  extends TelegramLongPollingBot {
+
+    private MongoDBController _mongoDBController;
+
+    public HungryMeBot(MongoDBController mongoDBController) {
+        this._mongoDBController = mongoDBController;
+    }
 
     public void onUpdateReceived(Update update) {
         // TODO : check if user in database. If not, add user to database
 
-            String test = MongoRecipe.recipeById("5e1331b8c9166876534a7878");
+        Recipe recipe = _mongoDBController.getRecipeById("5e1331b8c9166876534a7878");
+
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -31,11 +39,6 @@ public class HungryMeBot  extends TelegramLongPollingBot {
             finalMessage = finalMessage.concat("\n<b>/conferencia</b> <i>sigla_conferencia</i> OU <i>nome_conferencia</i>");
             finalMessage = finalMessage.concat("\n<b>/periodico</b> <i>issn_periodico</i> OU <i>nome_periodico</i>");
 
-            System.out.println("===> "+test);
-            message.setText(test);
-
-
-
             /*SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
                     .setChatId(update.getMessage().getChatId())
                     .setParseMode("HTML")
@@ -43,7 +46,7 @@ public class HungryMeBot  extends TelegramLongPollingBot {
             try {
                 execute(message); // Call method to send the message
             } catch (TelegramApiException e) {
-                e.toString();
+                e.printStackTrace();
             }
         }
     }

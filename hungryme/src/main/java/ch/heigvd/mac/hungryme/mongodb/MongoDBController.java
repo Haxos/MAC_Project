@@ -1,23 +1,26 @@
 package ch.heigvd.mac.hungryme.mongodb;
 
+import ch.heigvd.mac.hungryme.models.Recipe;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import ch.heigvd.mac.hungryme.mongodb.parsers.JSONParser;
 import ch.heigvd.mac.hungryme.mongodb.parsers.MongoDBParser;
 import ch.heigvd.mac.hungryme.mongodb.parsers.ParserBuilder;
+import org.bson.types.ObjectId;
 
 import java.util.List;
 
 public class MongoDBController {
-    private String CREDENTIAL_USERNAME;
-    private String CREDENTIAL_PASSWORD;
-    private String DATABASE_NAME;
-    private String DATABASE_AUTH;
-    private String COLLECTION_NAME;
-    private String HOST_SITE;
-    private int HOST_PORT;
+    private final String HOST_SITE;
+    private final int HOST_PORT;
+    private final String CREDENTIAL_USERNAME;
+    private final String CREDENTIAL_PASSWORD;
+    private final String DATABASE_NAME;
+    private final String DATABASE_AUTH;
+    private final String COLLECTION_NAME;
 
     public MongoDBController(
             String host_site,
@@ -38,6 +41,11 @@ public class MongoDBController {
         this.COLLECTION_NAME = collection_name;
     }
 
+    private MongoClient connect() {
+        return MongoClients.create("mongodb://" + CREDENTIAL_USERNAME + ":" + CREDENTIAL_PASSWORD
+                + "@" + HOST_SITE + ":" + HOST_PORT + "/?authSource=" + DATABASE_AUTH);
+    }
+
     public void addData(String pathData) {
         JSONParser jsonParser = ParserBuilder.JSONInputBuilder(pathData);
         try {
@@ -46,8 +54,8 @@ public class MongoDBController {
 
             System.out.println("Connection to MongoDB");
 
-            MongoClient mongoClient = MongoClients.create("mongodb://" + CREDENTIAL_USERNAME + ":" + CREDENTIAL_PASSWORD
-                    + "@" + HOST_SITE + ":" + HOST_PORT + "/?authSource=" + DATABASE_AUTH);
+            // Connect to MongoDB
+            MongoClient mongoClient = connect();
 
             MongoCollection<Document> collection = mongoClient
                     .getDatabase(DATABASE_NAME)
@@ -66,16 +74,18 @@ public class MongoDBController {
         }
     }
 
-    public static void main(String[] args) {
-        MongoDBController mongoDBController = new MongoDBController(
-                "192.168.99.101",
-                27017,
-                "admin",
-                "pass",
-                "hungry-me",
-                "admin",
-                "recipes"
-        );
-        mongoDBController.addData("resources/db-recipes.json");
+    public Recipe getRecipeById(String id) {
+        MongoClient mongoClient = connect();
+        MongoCollection<Document> collection = mongoClient
+                .getDatabase(DATABASE_NAME)
+                .getCollection(COLLECTION_NAME);
+
+        Document recipeDocument = collection.find(Filters.eq("_id", new ObjectId(id))).first();
+
+        if(recipeDocument == null) {
+            return null;
+        } else {
+            return new Recipe(recipeDocument.getString("_id"), recipeDocument.getString("name"));
+        }
     }
 }
