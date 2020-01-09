@@ -52,27 +52,27 @@ public class Recipe {
         this._source = source;
     }
 
-    public int getPreptime() {
+    public int getPrepTime() {
         return _preptime;
     }
 
-    public void setPreptime(int preptime) {
+    public void setPrepTime(int preptime) {
         this._preptime = preptime;
     }
 
-    public int getWaittime() {
+    public int getWaitTime() {
         return _waittime;
     }
 
-    public void setWaittime(int waittime) {
+    public void setWaitTime(int waittime) {
         this._waittime = waittime;
     }
 
-    public int getCooktime() {
+    public int getCookTime() {
         return _cooktime;
     }
 
-    public void setCooktime(int cooktime) {
+    public void setCookTime(int cooktime) {
         this._cooktime = cooktime;
     }
 
@@ -108,11 +108,11 @@ public class Recipe {
         this._fat = fat;
     }
 
-    public int getSatfat() {
+    public int getSatFat() {
         return _satfat;
     }
 
-    public void setSatfat(int satfat) {
+    public void setSatFat(int satfat) {
         this._satfat = satfat;
     }
 

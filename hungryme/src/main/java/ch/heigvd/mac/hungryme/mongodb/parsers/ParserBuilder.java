@@ -37,14 +37,14 @@ public class ParserBuilder {
 
                     Recipe recipe = new Recipe(newId.toString(), element.get("name").toString());
                     recipe.setSource(element.get("source").toString());
-                    recipe.setPreptime(Integer.parseInt(element.get("preptime").toString()));
-                    recipe.setWaittime(Integer.parseInt(element.get("waittime").toString()));
-                    recipe.setCooktime(Integer.parseInt(element.get("cooktime").toString()));
+                    recipe.setPrepTime(Integer.parseInt(element.get("preptime").toString()));
+                    recipe.setWaitTime(Integer.parseInt(element.get("waittime").toString()));
+                    recipe.setCookTime(Integer.parseInt(element.get("cooktime").toString()));
                     recipe.setServings(Integer.parseInt(element.get("servings").toString()));
                     recipe.setComments(element.get("comments").toString());
                     recipe.setCalories(Integer.parseInt(element.get("calories").toString()));
                     recipe.setFat(Integer.parseInt(element.get("fat").toString()));
-                    recipe.setSatfat(Integer.parseInt(element.get("satfat").toString()));
+                    recipe.setSatFat(Integer.parseInt(element.get("satfat").toString()));
                     recipe.setCarbs(Integer.parseInt(element.get("carbs").toString()));
                     recipe.setFiber(Integer.parseInt(element.get("fiber").toString()));
                     recipe.setSugar(Integer.parseInt(element.get("sugar").toString()));
@@ -115,14 +115,14 @@ public class ParserBuilder {
                     Document document = new Document()
                             .append("name", recipe.getName())
                             .append("source", recipe.getSource())
-                            .append("preptime", recipe.getPreptime())
-                            .append("waittime", recipe.getWaittime())
-                            .append("cooktime", recipe.getCooktime())
+                            .append("preptime", recipe.getPrepTime())
+                            .append("waittime", recipe.getWaitTime())
+                            .append("cooktime", recipe.getCookTime())
                             .append("servings", recipe.getServings())
                             .append("comments", recipe.getComments())
                             .append("calories", recipe.getCalories())
                             .append("fat", recipe.getFat())
-                            .append("satfat", recipe.getSatfat())
+                            .append("satfat", recipe.getSatFat())
                             .append("carbs", recipe.getCarbs())
                             .append("fiber", recipe.getFiber())
                             .append("sugar", recipe.getSugar())

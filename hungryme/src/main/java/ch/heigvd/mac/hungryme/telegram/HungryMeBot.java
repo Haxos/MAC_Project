@@ -1,19 +1,26 @@
 package ch.heigvd.mac.hungryme.telegram;
 
+import ch.heigvd.mac.hungryme.Env;
+import ch.heigvd.mac.hungryme.Utils;
+import ch.heigvd.mac.hungryme.models.Ingredient;
 import ch.heigvd.mac.hungryme.models.Recipe;
+import ch.heigvd.mac.hungryme.models.Unit;
 import ch.heigvd.mac.hungryme.mongodb.MongoDBController;
+import ch.heigvd.mac.hungryme.neo4j.Neo4jController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-public class HungryMeBot  extends TelegramLongPollingBot {
+public class HungryMeBot extends TelegramLongPollingBot {
 
-    private MongoDBController _mongoDBController;
+    private final MongoDBController _mongoDBController;
+    private final Neo4jController _neo4jController;
 
-    public HungryMeBot(MongoDBController mongoDBController) {
+    public HungryMeBot(MongoDBController mongoDBController, Neo4jController neo4jController) {
         this._mongoDBController = mongoDBController;
+        this._neo4jController = neo4jController;
     }
 
     public void onUpdateReceived(Update update) {
@@ -51,12 +58,54 @@ public class HungryMeBot  extends TelegramLongPollingBot {
         }
     }
 
+    @Override
     public String getBotUsername() {
-        return "HungryMe_bot";
+        return Env.TELEGRAM_BOT_NAME;
     }
 
+    @Override
     public String getBotToken() {
-        return "930161348:AAE6K8Uy61B9AWgOlY7EB22po4KhCoKCQiI";
+        return Env.TELEGRAM_TOKEN;
     }
 
+    private String format(Recipe recipe) {
+        // TITLE
+        String telegramRecipe = "<b><u>" + recipe.getName() + "</u></b>";
+        int servings = recipe.getServings();
+        if(servings != 0) {
+            telegramRecipe = telegramRecipe.concat(" - <i>(" + servings + " servings)</i>");
+        }
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // COOKING TIME STUFF
+        telegramRecipe = telegramRecipe.concat("<i>Time :</i>\n");
+        int preptime = recipe.getPrepTime();
+        int waittime = recipe.getWaitTime();
+        int cooktime = recipe.getCookTime();
+
+        if(preptime != 0) telegramRecipe = telegramRecipe.concat(" Prep : " + Utils.formatSeconds(preptime));
+        if(waittime != 0) telegramRecipe = telegramRecipe.concat(" Wait : " + Utils.formatSeconds(waittime));
+        if(cooktime != 0) telegramRecipe = telegramRecipe.concat(" Cook : " + Utils.formatSeconds(cooktime));
+
+        telegramRecipe = telegramRecipe.concat("\n\n");
+
+        // INGREDIENTS STUFF
+        telegramRecipe = telegramRecipe.concat("<i>Ingrdients :</i>\n");
+        for (Ingredient ingredient : recipe.getIngredients()) {
+
+            telegramRecipe = telegramRecipe.concat(((Double)ingredient.getQuantity()).toString());
+            if(!ingredient.getUnit().equals(Unit.NONE)){
+                telegramRecipe = telegramRecipe.concat(" " + ingredient.getUnit().toString());
+            }
+
+            telegramRecipe = telegramRecipe.concat("\t" + ingredient.getName() + "\n");
+        }
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // PREPARATION STUFF
+        telegramRecipe = telegramRecipe.concat("<i>Preparation :</i>\n");
+        telegramRecipe = telegramRecipe.concat(recipe.getInstructions());
+
+        return telegramRecipe;
+    }
 }

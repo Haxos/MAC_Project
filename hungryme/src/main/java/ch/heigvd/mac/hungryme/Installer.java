@@ -6,8 +6,8 @@ public class Installer {
 
     public static void main(String[] args) {
         MongoDBController mongoDBController = new MongoDBController(
-                Env.MONGODB_HOST_SITE,
-                Env.MONGODB_HOST_PORT,
+                Env.MONGODB_URI,
+                Env.MONGODB_PORT,
                 Env.MONGODB_CREDENTIAL_USERNAME,
                 Env.MONGODB_CREDENTIAL_PASSWORD,
                 Env.MONGODB_DATABASE_NAME,
