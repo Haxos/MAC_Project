@@ -12,7 +12,7 @@ public class HungryMeBot  extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         // TODO : check if user in database. If not, add user to database
 
-            String test = MongoRecipe.recipeById("5e1331b8c9166876534a7878");
+            String test = MongoRecipe.recipeById("5e16095fb302b7111d4c35cb");
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
 
