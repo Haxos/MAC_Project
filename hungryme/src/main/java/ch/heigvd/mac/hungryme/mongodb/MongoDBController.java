@@ -1,5 +1,6 @@
 package ch.heigvd.mac.hungryme.mongodb;
 
+import ch.heigvd.mac.hungryme.interfaces.DocumentDatabase;
 import ch.heigvd.mac.hungryme.models.Ingredient;
 import ch.heigvd.mac.hungryme.models.Recipe;
 import ch.heigvd.mac.hungryme.models.Unit;
@@ -16,7 +17,7 @@ import org.bson.types.ObjectId;
 import java.util.Collection;
 import java.util.List;
 
-public class MongoDBController {
+public class MongoDBController implements DocumentDatabase {
     private final String URI;
     private final int PORT;
     private final String CREDENTIAL_USERNAME;

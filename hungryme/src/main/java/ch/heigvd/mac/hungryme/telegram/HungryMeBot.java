@@ -2,11 +2,11 @@ package ch.heigvd.mac.hungryme.telegram;
 
 import ch.heigvd.mac.hungryme.Env;
 import ch.heigvd.mac.hungryme.Utils;
+import ch.heigvd.mac.hungryme.interfaces.DocumentDatabase;
+import ch.heigvd.mac.hungryme.interfaces.GraphDatabase;
 import ch.heigvd.mac.hungryme.models.Ingredient;
 import ch.heigvd.mac.hungryme.models.Recipe;
 import ch.heigvd.mac.hungryme.models.Unit;
-import ch.heigvd.mac.hungryme.mongodb.MongoDBController;
-import ch.heigvd.mac.hungryme.neo4j.Neo4jController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -15,18 +15,18 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class HungryMeBot extends TelegramLongPollingBot {
 
-    private final MongoDBController _mongoDBController;
-    private final Neo4jController _neo4jController;
+    private final DocumentDatabase _documentDB;
+    private final GraphDatabase _graphDB;
 
-    public HungryMeBot(MongoDBController mongoDBController, Neo4jController neo4jController) {
-        this._mongoDBController = mongoDBController;
-        this._neo4jController = neo4jController;
+    public HungryMeBot(DocumentDatabase documentDatabase, GraphDatabase graphDatabase) {
+        this._documentDB = documentDatabase;
+        this._graphDB = graphDatabase;
     }
 
     public void onUpdateReceived(Update update) {
         // TODO : check if user in database. If not, add user to database
 
-        Recipe recipe = _mongoDBController.getRecipeById("5e1331b8c9166876534a7878");
+        Recipe recipe = _documentDB.getRecipeById("5e1331b8c9166876534a7878");
 
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {

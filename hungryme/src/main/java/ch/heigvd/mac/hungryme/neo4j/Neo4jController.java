@@ -7,7 +7,7 @@ import org.neo4j.driver.v1.*;
 
 import static org.neo4j.driver.v1.Values.parameters;
 
-public class Neo4jController implements AutoCloseable {
+public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphDatabase, AutoCloseable {
     private final Driver _driver;
 
     public Neo4jController(String uri, String username, String password) {
