@@ -5,6 +5,8 @@ import ch.heigvd.mac.hungryme.models.Recipe;
 import ch.heigvd.mac.hungryme.models.User;
 import org.neo4j.driver.v1.*;
 
+import java.util.Collection;
+
 import static org.neo4j.driver.v1.Values.parameters;
 
 public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphDatabase, AutoCloseable {
@@ -28,23 +30,25 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
 
     public void addRecipe(Recipe recipe) {
         try (Session session = this._driver.session()) {
-            session.writeTransaction(new TransactionWork<String>() {
-
-                @Override
-                public String execute(Transaction transaction) {
-                    // label for query and propriety if not queryable
-                    StatementResult result = transaction.run(
-                            "CREATE (n:Recipe:$id:$preptime:$ {" +
-                                    "name: $name" +
-                                    "})",
-                            parameters(
-                                    "id", recipe.getId(),
-                                    "name", recipe.getName()
-                                    //TODO: finish recipe neo4j
-                            )
-                    );
-                    return result.single().get(0).asString();
-                }
+            session.writeTransaction(transaction -> {
+                // label for query and propriety if not queryable
+                StatementResult result = transaction.run(
+                        "CREATE (n:Recipe {" +
+                                "id: $id," +
+                                "name: $name," +
+                                "preptime: $preptime," +
+                                "waittime: $waittime," +
+                                "cooktime: $cooktime" +
+                                "})",
+                        parameters(
+                                "id", recipe.getId(),
+                                "name", recipe.getName(),
+                                "preptime", recipe.getPrepTime(),
+                                "waittime", recipe.getWaitTime(),
+                                "cooktime", recipe.getCookTime()
+                        )
+                );
+                return "";
             });
         }
     }
