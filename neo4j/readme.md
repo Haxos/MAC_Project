@@ -1,1 +1,0 @@
-delete all nodes: ```match (n) detach delete n```
