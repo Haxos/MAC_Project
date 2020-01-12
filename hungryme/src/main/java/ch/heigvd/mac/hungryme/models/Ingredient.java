@@ -1,4 +1,4 @@
-package models;
+package ch.heigvd.mac.hungryme.models;
 
 public class Ingredient {
     private Unit _unit;

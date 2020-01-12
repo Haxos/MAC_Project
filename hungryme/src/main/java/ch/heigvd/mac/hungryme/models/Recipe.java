@@ -1,10 +1,10 @@
-package models;
+package ch.heigvd.mac.hungryme.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class Recipe {
-    private int _id;
+    private String _id;
     private String _name;
     private String _source = ""; //link
     private int _preptime = 0;
@@ -20,19 +20,19 @@ public class Recipe {
     private int _sugar = 0;
     private int _protein = 0;
     private String _instructions = "";
-    private Collection<Ingredient> _ingredients = new ArrayList<Ingredient>();
-    private Collection<String> _tags = new ArrayList<String>();
+    private Collection<Ingredient> _ingredients = new ArrayList<>();
+    private Collection<String> _tags = new ArrayList<>();
 
-    public Recipe(int id, String name) {
+    public Recipe(String id, String name) {
         this._id = id;
         this._name = name;
     }
 
-    public int getId() {
+    public String getId() {
         return _id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this._id = id;
     }
 
@@ -52,27 +52,27 @@ public class Recipe {
         this._source = source;
     }
 
-    public int getPreptime() {
+    public int getPrepTime() {
         return _preptime;
     }
 
-    public void setPreptime(int preptime) {
+    public void setPrepTime(int preptime) {
         this._preptime = preptime;
     }
 
-    public int getWaittime() {
+    public int getWaitTime() {
         return _waittime;
     }
 
-    public void setWaittime(int waittime) {
+    public void setWaitTime(int waittime) {
         this._waittime = waittime;
     }
 
-    public int getCooktime() {
+    public int getCookTime() {
         return _cooktime;
     }
 
-    public void setCooktime(int cooktime) {
+    public void setCookTime(int cooktime) {
         this._cooktime = cooktime;
     }
 
@@ -108,11 +108,11 @@ public class Recipe {
         this._fat = fat;
     }
 
-    public int getSatfat() {
+    public int getSatFat() {
         return _satfat;
     }
 
-    public void setSatfat(int satfat) {
+    public void setSatFat(int satfat) {
         this._satfat = satfat;
     }
 

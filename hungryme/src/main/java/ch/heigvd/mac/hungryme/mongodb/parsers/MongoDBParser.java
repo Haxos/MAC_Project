@@ -1,6 +1,6 @@
-package parsers;
+package ch.heigvd.mac.hungryme.mongodb.parsers;
 
-import models.Recipe;
+import ch.heigvd.mac.hungryme.models.Recipe;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -10,5 +10,5 @@ public interface MongoDBParser {
 
     Collection<Document> getDocuments();
     void setRecipes(Collection<Recipe> recipes);
-    void compose() throws NullPointerException, IOException;
+    void compose() throws NullPointerException;
 }

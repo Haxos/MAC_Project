@@ -1,4 +1,4 @@
-package models;
+package ch.heigvd.mac.hungryme.models;
 
 import java.util.regex.*;
 
@@ -8,7 +8,7 @@ public enum Unit {
     NONE {
         @Override
         public String toString() {
-            return "";
+            return "unit";
         }
     },
     SPOON {

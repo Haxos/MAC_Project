@@ -1,9 +1,8 @@
-package parsers;
+package ch.heigvd.mac.hungryme.mongodb.parsers;
 
-import com.mongodb.client.MongoCollection;
-import models.Ingredient;
-import models.Recipe;
-import models.Unit;
+import ch.heigvd.mac.hungryme.models.Ingredient;
+import ch.heigvd.mac.hungryme.models.Recipe;
+import ch.heigvd.mac.hungryme.models.Unit;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,30 +21,30 @@ public class ParserBuilder {
             private final String _path = path;
 
             public Collection<Recipe> getRecipes() {
-                return _recipes;
+                return this._recipes;
             }
 
             public void parse() throws IOException {
-                _recipes = new ArrayList<>();
+                this._recipes = new ArrayList<>();
 
-                byte[] encoded = Files.readAllBytes(Paths.get(_path));
+                byte[] encoded = Files.readAllBytes(Paths.get(this._path));
                 String content = new String(encoded);
                 JSONObject collection = new JSONObject(content);
-                int newId = 0;
+                Integer newId = 0;
                 for (String key : collection.keySet()) {
                     JSONObject element = (JSONObject) collection.get(key);
                     ++newId;
 
-                    Recipe recipe = new Recipe(newId, element.get("name").toString());
+                    Recipe recipe = new Recipe(newId.toString(), element.get("name").toString());
                     recipe.setSource(element.get("source").toString());
-                    recipe.setPreptime(Integer.parseInt(element.get("preptime").toString()));
-                    recipe.setWaittime(Integer.parseInt(element.get("waittime").toString()));
-                    recipe.setCooktime(Integer.parseInt(element.get("cooktime").toString()));
+                    recipe.setPrepTime(Integer.parseInt(element.get("preptime").toString()));
+                    recipe.setWaitTime(Integer.parseInt(element.get("waittime").toString()));
+                    recipe.setCookTime(Integer.parseInt(element.get("cooktime").toString()));
                     recipe.setServings(Integer.parseInt(element.get("servings").toString()));
                     recipe.setComments(element.get("comments").toString());
                     recipe.setCalories(Integer.parseInt(element.get("calories").toString()));
                     recipe.setFat(Integer.parseInt(element.get("fat").toString()));
-                    recipe.setSatfat(Integer.parseInt(element.get("satfat").toString()));
+                    recipe.setSatFat(Integer.parseInt(element.get("satfat").toString()));
                     recipe.setCarbs(Integer.parseInt(element.get("carbs").toString()));
                     recipe.setFiber(Integer.parseInt(element.get("fiber").toString()));
                     recipe.setSugar(Integer.parseInt(element.get("sugar").toString()));
@@ -57,13 +55,30 @@ public class ParserBuilder {
                     for (Object ingredientObject : ingredientsJSONArray) {
                         String[] ingredientParsed = ingredientObject.toString().split(" ");
                         Ingredient ingredient;
+                        int startPos;
                         try {
-                            double quantity = Double.parseDouble(ingredientParsed[0]);
-                            int startPos = 2;
-                            Unit unit = Unit.getUnitFromString(ingredientParsed[1]);
+                            double quantity;
+                            startPos = 2;
+
+                            // treatment of fractions
+                            // Source: https://www.rgagnon.com/javadetails/java-convert-fraction-to-double.html
+                            if(ingredientParsed[0].contains("/")) {
+                                String[] numbers = ingredientParsed[0].split("/");
+                                quantity = Double.parseDouble(numbers[0]) / Double.parseDouble(numbers[1]);
+                            }
+                            // case "1 1/2" => 1.5
+                            else if(ingredientParsed[1].contains("/")) {
+                                String[] numbers = ingredientParsed[1].split("/");
+                                quantity = Double.parseDouble(ingredientParsed[0]) + (Double.parseDouble(numbers[0]) / Double.parseDouble(numbers[1]));
+                                startPos = 3;
+                            } else {
+                                quantity = Double.parseDouble(ingredientParsed[0]);
+                            }
+
+                            Unit unit = Unit.getUnitFromString(ingredientParsed[startPos - 1]);
 
                             if(unit == Unit.NONE) {
-                                startPos = 1;
+                                --startPos;
                             }
 
                             ingredient = new Ingredient(
@@ -82,7 +97,7 @@ public class ParserBuilder {
                         recipe.addTag(tagObject.toString());
                     }
 
-                    _recipes.add(recipe);
+                    this._recipes.add(recipe);
                 }
             }
         };
@@ -94,41 +109,45 @@ public class ParserBuilder {
             private Collection<Document> _documents;
 
             public Collection<Document> getDocuments() {
-                return _documents;
+                return this._documents;
             }
 
             public void setRecipes(Collection<Recipe> recipes) {
                 this._recipes = recipes;
             }
 
-            public void compose() throws NullPointerException, IOException {
-                _documents = new ArrayList<>();
-                for (Recipe recipe: _recipes) {
-                    Collection<String> ingredientsString = new ArrayList<>();
+            public void compose() throws NullPointerException {
+                this._documents = new ArrayList<>();
+                for (Recipe recipe: this._recipes) {
+                    Collection<Document> ingredientsCollection = new ArrayList<>();
 
                     for(Ingredient ingredient: recipe.getIngredients()) {
-                        ingredientsString.add(ingredient.toString());
+                        Document ingredientDocument = new Document()
+                                            .append("unit", ingredient.getUnit().toString())
+                                            .append("quantity", ingredient.getQuantity())
+                                            .append("name", ingredient.getName());
+                        ingredientsCollection.add(ingredientDocument);
                     }
 
                     Document document = new Document()
                             .append("name", recipe.getName())
                             .append("source", recipe.getSource())
-                            .append("preptime", recipe.getPreptime())
-                            .append("waittime", recipe.getWaittime())
-                            .append("cooktime", recipe.getCooktime())
+                            .append("preptime", recipe.getPrepTime())
+                            .append("waittime", recipe.getWaitTime())
+                            .append("cooktime", recipe.getCookTime())
                             .append("servings", recipe.getServings())
                             .append("comments", recipe.getComments())
                             .append("calories", recipe.getCalories())
                             .append("fat", recipe.getFat())
-                            .append("satfat", recipe.getSatfat())
+                            .append("satfat", recipe.getSatFat())
                             .append("carbs", recipe.getCarbs())
                             .append("fiber", recipe.getFiber())
                             .append("sugar", recipe.getSugar())
                             .append("protein", recipe.getProtein())
                             .append("instructions", recipe.getInstructions())
-                            .append("ingredients", ingredientsString)
+                            .append("ingredients", ingredientsCollection)
                             .append("tags", recipe.getTags());
-                    _documents.add(document);
+                    this._documents.add(document);
                 }
             }
         };
