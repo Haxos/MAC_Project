@@ -55,13 +55,30 @@ public class ParserBuilder {
                     for (Object ingredientObject : ingredientsJSONArray) {
                         String[] ingredientParsed = ingredientObject.toString().split(" ");
                         Ingredient ingredient;
+                        int startPos;
                         try {
-                            double quantity = Double.parseDouble(ingredientParsed[0]);
-                            int startPos = 2;
-                            Unit unit = Unit.getUnitFromString(ingredientParsed[1]);
+                            double quantity;
+                            startPos = 2;
+
+                            // treatment of fractions
+                            // Source: https://www.rgagnon.com/javadetails/java-convert-fraction-to-double.html
+                            if(ingredientParsed[0].contains("/")) {
+                                String[] numbers = ingredientParsed[0].split("/");
+                                quantity = Double.parseDouble(numbers[0]) / Double.parseDouble(numbers[1]);
+                            }
+                            // case "1 1/2" => 1.5
+                            else if(ingredientParsed[1].contains("/")) {
+                                String[] numbers = ingredientParsed[1].split("/");
+                                quantity = Double.parseDouble(ingredientParsed[0]) + (Double.parseDouble(numbers[0]) / Double.parseDouble(numbers[1]));
+                                startPos = 3;
+                            } else {
+                                quantity = Double.parseDouble(ingredientParsed[0]);
+                            }
+
+                            Unit unit = Unit.getUnitFromString(ingredientParsed[startPos - 1]);
 
                             if(unit == Unit.NONE) {
-                                startPos = 1;
+                                --startPos;
                             }
 
                             ingredient = new Ingredient(

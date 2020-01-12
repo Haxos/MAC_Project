@@ -4,3 +4,5 @@
 /.docker-env/neo4j/*
 
 /.docker-env/neo4j/databases/*
+
+/.docker-env/neo4j/databases/*
