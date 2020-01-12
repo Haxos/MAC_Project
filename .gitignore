@@ -2,3 +2,5 @@
 **/target/*
 /.docker-env/*
 /.docker-env/neo4j/*
+
+/.docker-env/neo4j/databases/*
