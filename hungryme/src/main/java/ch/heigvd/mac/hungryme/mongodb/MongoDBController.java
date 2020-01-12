@@ -1,5 +1,6 @@
 package ch.heigvd.mac.hungryme.mongodb;
 
+import ch.heigvd.mac.hungryme.Utils;
 import ch.heigvd.mac.hungryme.interfaces.DocumentDatabase;
 import ch.heigvd.mac.hungryme.models.Ingredient;
 import ch.heigvd.mac.hungryme.models.Recipe;
@@ -16,7 +17,10 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class MongoDBController implements DocumentDatabase {
     private final String URI;
@@ -87,6 +91,57 @@ public class MongoDBController implements DocumentDatabase {
 
         return documentToRecipe(collection.find(Filters.eq("_id", new ObjectId(id))).first());
     }
+/*
+    public static String recipeByRecipe(Recipe  recipe){
+        // TITLE
+
+        String telegramRecipe = "<b><u>" + recipe.getName() + "</u></b>";
+        int servings = recipe.getServings();
+        if(servings != 0) telegramRecipe = telegramRecipe.concat(" - <i>("+servings+" servings)</i>");
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // COOKING TIME STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Time :</i>\n");
+        int preptime = recipe.getPrepTime();
+        int waittime = recipe.getWaitTime();
+        int cooktime = recipe.getCookTime();
+
+        if(preptime != 0) telegramRecipe = telegramRecipe.concat(" Prep : "+ Utils.formatSeconds(preptime));
+        if(waittime != 0) telegramRecipe = telegramRecipe.concat(" Wait : "+ Utils.formatSeconds(waittime));
+        if(cooktime != 0) telegramRecipe = telegramRecipe.concat(" Cook : "+ Utils.formatSeconds(cooktime));
+
+        telegramRecipe = telegramRecipe.concat("\n\n");
+
+        // INGREDIENTS STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Ingrdients :</i>\n");
+        Collection<Ingredient> ingredients = (Collection<Ingredient>)recipe.getIngredients();
+        Iterator ingredient = ingredients.iterator();
+        while(ingredient.hasNext()){
+            Ingredient ingr = (Ingredient) ingredient.next();
+            String ingredientUnit       = ingr.getUnit().toString();
+            String ingredientQuantity   = Double. toString(ingr.getQuantity());
+            String ingredientName       = ingr.getName();
+
+            telegramRecipe = telegramRecipe.concat(ingredientQuantity);
+            if(!ingredientUnit.equals("unit")){
+                telegramRecipe = telegramRecipe.concat(" "+ingredientUnit);
+            }
+
+            telegramRecipe = telegramRecipe.concat("\t"+ingredientName+"\n");
+
+        }
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // PREPARATION STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Preparation :</i>\n");
+
+        telegramRecipe = telegramRecipe.concat(recipe.getInstructions());
+
+        return telegramRecipe;
+    }*/
 
     @Override
     public Collection<Recipe> getAllRecipes() {

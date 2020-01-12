@@ -26,7 +26,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         // TODO : check if user in database. If not, add user to database
 
-        Recipe recipe = _documentDB.getRecipeById("5e1331b8c9166876534a7878");
+        Recipe recipe = _documentDB.getRecipeById("5e16095fb302b7111d4c35cb");
 
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -40,11 +40,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId());
             message.setParseMode(ParseMode.HTML);
+            message.setText(recipe.toString());
 
-            String finalMessage = new String("<b>Verificador de Qualis - CAPES</b>\n");
-            finalMessage = finalMessage.concat("\nUtilize os seguintes comandos para consulta\n");
-            finalMessage = finalMessage.concat("\n<b>/conferencia</b> <i>sigla_conferencia</i> OU <i>nome_conferencia</i>");
-            finalMessage = finalMessage.concat("\n<b>/periodico</b> <i>issn_periodico</i> OU <i>nome_periodico</i>");
 
             /*SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
                     .setChatId(update.getMessage().getChatId())
@@ -53,6 +50,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
             try {
                 execute(message); // Call method to send the message
             } catch (TelegramApiException e) {
+                System.out.println("ERROR :\n=======");
+                System.out.println();
                 e.printStackTrace();
             }
         }

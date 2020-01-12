@@ -1,7 +1,10 @@
 package ch.heigvd.mac.hungryme.models;
 
+import ch.heigvd.mac.hungryme.Utils;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 public class Recipe {
     private String _id;
@@ -178,5 +181,54 @@ public class Recipe {
 
     public void removeTag(String tag) {
         this._tags.remove(tag);
+    }
+
+    public String toString(){
+        String telegramRecipe = "<b><u>" + this._name + "</u></b>";
+        int servings = this._servings;
+        if(servings != 0) telegramRecipe = telegramRecipe.concat(" - <i>("+servings+" servings)</i>");
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // COOKING TIME STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Time :</i>\n");
+        int preptime = this._preptime;
+        int waittime = this._waittime;
+        int cooktime = this._cooktime;
+
+        if(preptime != 0) telegramRecipe = telegramRecipe.concat(" Prep : "+ Utils.formatSeconds(preptime));
+        if(waittime != 0) telegramRecipe = telegramRecipe.concat(" Wait : "+ Utils.formatSeconds(waittime));
+        if(cooktime != 0) telegramRecipe = telegramRecipe.concat(" Cook : "+ Utils.formatSeconds(cooktime));
+
+        telegramRecipe = telegramRecipe.concat("\n\n");
+
+        // INGREDIENTS STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Ingrdients :</i>\n");
+        Collection<Ingredient> ingredients = this._ingredients;
+        Iterator ingredient = ingredients.iterator();
+        while(ingredient.hasNext()){
+            Ingredient ingr = (Ingredient) ingredient.next();
+            String ingredientUnit       = ingr.getUnit().toString();
+            String ingredientQuantity   = Double. toString(ingr.getQuantity());
+            String ingredientName       = ingr.getName();
+
+            telegramRecipe = telegramRecipe.concat(ingredientQuantity);
+            if(!ingredientUnit.equals("unit")){
+                telegramRecipe = telegramRecipe.concat(" "+ingredientUnit);
+            }
+
+            telegramRecipe = telegramRecipe.concat("\t"+ingredientName+"\n");
+
+        }
+        telegramRecipe = telegramRecipe.concat("\n");
+
+        // PREPARATION STUFF
+
+        telegramRecipe = telegramRecipe.concat("<i>Preparation :</i>\n");
+
+        telegramRecipe = telegramRecipe.concat(this._instructions);
+
+        return telegramRecipe;
     }
 }
