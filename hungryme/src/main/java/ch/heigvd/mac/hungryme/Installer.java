@@ -29,10 +29,12 @@ public class Installer {
         );
 
         System.out.println("Neo4j: begin data push");
-        //TODO: install neo4j data
+
         for (Recipe recipe : recipes) {
             neo4jController.addRecipe(recipe);
         }
         System.out.println("Neo4j: data pushed");
+
+        System.exit(0);
     }
 }

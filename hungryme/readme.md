@@ -6,4 +6,5 @@
 5) Run ```/src/main/java/ch/heigvd/mac/hungryme/Main.java```. It's successful if it display "Operation successful"
 
 #Neo4j
-delete all nodes: ```match (n) detach delete n```
+1) find all the recipes having the tag breakfast (recipe, relation & tag): ```MATCH (n:Recipe)-[r]->(m:Tag {name : "breakfast"}) RETURN n,r,m```
+2) delete all nodes: ```match (n) detach delete n```
