@@ -7,6 +7,7 @@ import ch.heigvd.mac.hungryme.interfaces.GraphDatabase;
 import ch.heigvd.mac.hungryme.models.Ingredient;
 import ch.heigvd.mac.hungryme.models.Recipe;
 import ch.heigvd.mac.hungryme.models.Unit;
+import ch.heigvd.mac.hungryme.models.User;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -29,10 +30,16 @@ public class HungryMeBot extends TelegramLongPollingBot {
     }
 
     public void onUpdateReceived(Update update) {
-        // TODO : check if user in database. If not, add user to database
+        User chatUser = new User(
+                    update.getMessage().getFrom().getId().toString(),
+                    update.getMessage().getFrom().getUserName(),
+                    update.getMessage().getFrom().getFirstName(),
+                    update.getMessage().getFrom().getLastName()
+                );
 
+        _graphDB.addUser(chatUser);
 
-        Recipe recipe = _documentDB.getRecipeById("5e16095fb302b7111d4c35cb");
+        Recipe recipe = _documentDB.getRecipeById("5e1c74cefd1a3f219f977b2a");
 
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -46,9 +53,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId());
             message.setParseMode(ParseMode.HTML);
-            message.setText(recipe.toString());
-
-
+            message.setText(format(recipe));
 
             // Create ReplyKeyboardMarkup object
             ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();

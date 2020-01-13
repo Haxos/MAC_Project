@@ -121,6 +121,12 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
 
     public void addUser(User user) {
         //TODO: add user
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run("MERGE " + formatUser(user));
+                return "User: {userName: " + user.getUserName() + "} added successfully";
+            });
+        }
     }
 
     private String formatRecipe(Recipe recipe) {
@@ -130,10 +136,25 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
     private String formatRecipe(Recipe recipe, String varName) {
         return "(" + varName + ":Recipe {" +
                 "id: \"" + recipe.getId() + "\"" +
-                ", name: \"" + recipe.getName().replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase() + "\"" +
+                ", name: \"" + recipe.getName().replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase().trim() + "\"" +
                 ", preptime: " + recipe.getPrepTime() +
                 ", waittime: " + recipe.getWaitTime() +
                 ", cooktime: " + recipe.getCookTime() +
+                "})";
+    }
+
+    private String formatUser(User user){
+        return formatUser(user, "n");
+    }
+
+    private String formatUser(User user, String varName){
+        return "(" + varName + ":User {" +
+                "id: \"" + user.getId() + "\"" +
+                ", userName: \"" + user.getUserName() + "\"" +
+                ", firstName: \"" + user.getFirstName() + "\"" +
+                ", lastName: \"" + user.getLastName() + "\"" +
+                ", timeFast: " + user.getTimeFast() +
+                ", timeVeryFast: " + user.getTimeVeryFast() +
                 "})";
     }
 
@@ -143,7 +164,7 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
 
     private String formatIngredient(Ingredient ingredient, String varName) {
         return "(" + varName + ":Ingredient {" +
-                "name: \"" + ingredient.getName().replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase() + "\"" +
+                "name: \"" + ingredient.getName().replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase().trim() + "\"" +
                 "})";
     }
 
@@ -153,7 +174,7 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
 
     private String formatTag(String tag, String varName) {
         return "(" + varName + ":Tag {" +
-                "name: \"" + tag.replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase() + "\"" +
+                "name: \"" + tag.replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase().trim() + "\"" +
                 "})";
     }
 }

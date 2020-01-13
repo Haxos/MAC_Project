@@ -8,3 +8,7 @@
 #Neo4j
 1) find all the recipes having the tag breakfast (recipe, relation & tag): ```MATCH (n:Recipe)-[r]->(m:Tag {name : "breakfast"}) RETURN n,r,m```
 2) delete all nodes: ```match (n) detach delete n```
+3) research AND ```MATCH (n:Recipe)--(:Ingredient{name:"milk"}),
+                   (n)--(:Ingredient{name:"eggs"})
+                   RETURN n```
+       
