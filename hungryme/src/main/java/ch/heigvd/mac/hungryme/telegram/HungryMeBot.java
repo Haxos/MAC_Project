@@ -31,11 +31,12 @@ public class HungryMeBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         // TODO : check if user in database. If not, add user to database
 
+
         Recipe recipe = _documentDB.getRecipeById("5e16095fb302b7111d4c35cb");
 
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
-
+            System.out.println(update.toString());
             // DONE : tockenize the message
             String tockens[]= update.getMessage().getText().split("\\s+");
 
@@ -56,19 +57,20 @@ public class HungryMeBot extends TelegramLongPollingBot {
             // Create a keyboard row
             KeyboardRow row = new KeyboardRow();
             // Set each button, you can also use KeyboardButton objects if you need something else than text
-            row.add("Row 1 Button 1");
-            row.add("Row 1 Button 2");
-            row.add("Row 1 Button 3");
+            row.add("\uD83D\uDC4D like");
+            row.add("\uD83D\uDC4Edislike");
+            row.add("❤️add to favorite");
+            row.add("Show more");
             // Add the first row to the keyboard
             keyboard.add(row);
             // Create another keyboard row
-            row = new KeyboardRow();
+            /*row = new KeyboardRow();
             // Set each button for the second line
             row.add("Row 2 Button 1");
             row.add("Row 2 Button 2");
             row.add("Row 2 Button 3");
             // Add the second row to the keyboard
-            keyboard.add(row);
+            keyboard.add(row);*/
             // Set the keyboard to the markup
             keyboardMarkup.setKeyboard(keyboard);
             // Add it to the message
