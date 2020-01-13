@@ -182,5 +182,4 @@ public class Recipe {
     public void removeTag(String tag) {
         this._tags.remove(tag);
     }
-
 }

@@ -53,6 +53,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId());
             message.setParseMode(ParseMode.HTML);
+
             message.setText(format(recipe));
 
             // Create ReplyKeyboardMarkup object
