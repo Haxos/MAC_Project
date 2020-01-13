@@ -47,14 +47,16 @@ public class HungryMeBot extends TelegramLongPollingBot {
             // DONE : tockenize the message
             String tockens[]= update.getMessage().getText().split("\\s+");
 
-            // TODO : parse the message to know what to do
 
+            // TODO : parse the message to know what to do
+            parseResult(tockens);
 
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId());
             message.setParseMode(ParseMode.HTML);
 
-            message.setText(format(recipe));
+            //message.setText(format(recipe));
+            message.setText("OK...");
 
             // Create ReplyKeyboardMarkup object
             ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -64,29 +66,15 @@ public class HungryMeBot extends TelegramLongPollingBot {
             KeyboardRow row = new KeyboardRow();
             // Set each button, you can also use KeyboardButton objects if you need something else than text
             row.add("\uD83D\uDC4D like");
-            row.add("\uD83D\uDC4Edislike");
-            row.add("❤️add to favorite");
+            row.add("\uD83D\uDC4E dislike");
+            row.add("❤️ add to favorite");
             row.add("Show more");
             // Add the first row to the keyboard
             keyboard.add(row);
-            // Create another keyboard row
-            /*row = new KeyboardRow();
-            // Set each button for the second line
-            row.add("Row 2 Button 1");
-            row.add("Row 2 Button 2");
-            row.add("Row 2 Button 3");
-            // Add the second row to the keyboard
-            keyboard.add(row);*/
-            // Set the keyboard to the markup
             keyboardMarkup.setKeyboard(keyboard);
             // Add it to the message
             message.setReplyMarkup(keyboardMarkup);
 
-
-            /*SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
-                    .setChatId(update.getMessage().getChatId())
-                    .setParseMode("HTML")
-                    .setText(test);*/
             try {
                 execute(message); // Call method to send the message
             } catch (TelegramApiException e) {
@@ -115,6 +103,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
             telegramRecipe = telegramRecipe.concat(" - <i>(" + servings + " servings)</i>");
         }
         telegramRecipe = telegramRecipe.concat("\n");
+
+        telegramRecipe = telegramRecipe.concat("<i>{id:"+ recipe.getId() +"}</i>\n\n");
 
         // COOKING TIME STUFF
         telegramRecipe = telegramRecipe.concat("<i>Time :</i>\n");
@@ -146,5 +136,20 @@ public class HungryMeBot extends TelegramLongPollingBot {
         telegramRecipe = telegramRecipe.concat(recipe.getInstructions());
 
         return telegramRecipe;
+    }
+
+    //private List<String> parseResult(String[] tokens){
+    private void parseResult(String[] tokens){
+        if(tokens[0].equals("a")){  //unique recipe
+            System.out.println("==> unique recipe");
+        }else if(tokens[0].equals("\uD83D\uDC4D")){ // Like
+            System.out.println("==> like");
+        }else if(tokens[0].equals("\uD83D\uDC4E")){ // dislike
+            System.out.println("==> dislike");
+        }else if(tokens[0].equals("❤️")){   // add to favorite
+            System.out.println("==> addd to favorite");
+        }else if(tokens[0].equals("\uD83D\uDC94")){// remove from favorite
+
+        }
     }
 }
