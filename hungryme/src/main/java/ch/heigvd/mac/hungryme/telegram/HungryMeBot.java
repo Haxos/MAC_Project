@@ -17,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class HungryMeBot extends TelegramLongPollingBot {
@@ -78,8 +79,6 @@ public class HungryMeBot extends TelegramLongPollingBot {
             try {
                 execute(message); // Call method to send the message
             } catch (TelegramApiException e) {
-                System.out.println("ERROR :\n=======");
-                System.out.println();
                 e.printStackTrace();
             }
         }
@@ -140,16 +139,49 @@ public class HungryMeBot extends TelegramLongPollingBot {
 
     //private List<String> parseResult(String[] tokens){
     private void parseResult(String[] tokens){
-        if(tokens[0].equals("a")){  //unique recipe
-            System.out.println("==> unique recipe");
-        }else if(tokens[0].equals("\uD83D\uDC4D")){ // Like
-            System.out.println("==> like");
-        }else if(tokens[0].equals("\uD83D\uDC4E")){ // dislike
-            System.out.println("==> dislike");
-        }else if(tokens[0].equals("❤️")){   // add to favorite
-            System.out.println("==> addd to favorite");
-        }else if(tokens[0].equals("\uD83D\uDC94")){// remove from favorite
+        // keywords
+        final String unique = "a";
+        final String forTags = "for";
+        final String forIngredients = "with";
 
+        final String like = "\uD83D\uDC4D";
+        final String dislike = "\uD83D\uDC4E";
+        final String addFav = "❤️";
+        final String remFav = "\uD83D\uDC94";
+
+        ArrayList<String> tags = new ArrayList<String>();
+        ArrayList<String> ingredients = new ArrayList<String>();
+
+        ArrayList<String> recipesId = new ArrayList<String>();
+        ArrayList<Recipe> recipes = new ArrayList<Recipe>();
+
+        if(tokens[0].equals(unique)){  //unique recipe
+            System.out.println("==> unique recipe");
+        }else if(tokens[0].equals(like)){ // Like
+            System.out.println("==> like");
+        }else if(tokens[0].equals(dislike)){ // dislike
+            System.out.println("==> dislike");
+        }else if(tokens[0].equals(addFav)){   // add to favorite
+            System.out.println("==> addd to favorite");
+        }else if(tokens[0].equals(remFav)){// remove from favorite
+            System.out.println("==> remove from favorite");
         }
+
+        //a {time : (very) fast/short} recipe(s) with {ingredients} for {tags}
+
+        // get ingredients
+        for(int i = Arrays.asList(tokens).indexOf(forIngredients); i>=0 && i<tokens.length && !tokens[i].equals(forTags); i++){
+            if(!tokens[i].equals(forIngredients))
+                ingredients.add(tokens[i]);
+        }
+
+        // get tags
+        for(int i = Arrays.asList(tokens).indexOf(forTags); i>=0 && i<tokens.length; i++){
+            if(!tokens[i].equals(forTags))
+                tags.add(tokens[i]);
+        }
+        recipesId = (ArrayList<String>) _graphDB.getRecipes(ingredients, tags);
+        System.out.println("ingredients : "+ ingredients.toString());
+        System.out.println("tags : "+ tags.toString());
     }
 }

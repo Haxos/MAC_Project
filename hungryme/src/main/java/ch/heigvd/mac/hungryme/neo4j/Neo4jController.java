@@ -7,6 +7,10 @@ import org.neo4j.driver.v1.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphDatabase, AutoCloseable {
     private final Driver _driver;
@@ -120,7 +124,6 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
     }
 
     public void addUser(User user) {
-        //TODO: add user
         try (Session session = this._driver.session()) {
             session.writeTransaction(transaction -> {
                 transaction.run("MERGE " + formatUser(user));
@@ -176,5 +179,73 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         return "(" + varName + ":Tag {" +
                 "name: \"" + tag.replaceAll("[^a-zA-Z0-9\\-]", " ").toLowerCase().trim() + "\"" +
                 "})";
+    }
+
+    public List<String> getRecipes(Collection<String> ingredients, Collection<String> tags ){
+        String ingredientsNames = "";
+        String tagNames = "";
+        String query = "";
+
+        List result = new ArrayList<String>();
+
+        if(!ingredients.isEmpty()){
+            ingredientsNames= "UNWIND " + CollectionToString(ingredients) + " AS ingredientName\n";
+        }
+
+        if(!tags.isEmpty()){
+            tagNames = "UNWIND " + CollectionToString(tags) + " AS tagName\n";
+        }
+
+        if(!ingredients.isEmpty() && !tags.isEmpty()){ // we have ingredients and tags !
+            query = query.concat(ingredientsNames);
+            query = query.concat(tagNames);
+            query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
+                    "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+                    "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName\n" +
+                    "        ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC");
+        }else if(!ingredients.isEmpty() && tags.isEmpty()){ // we only have ingredients
+            query = query.concat(ingredientsNames);
+            query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
+                    "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients\n" +
+                    "        ORDER BY size(collect(ingredient.name)) DESC");
+        }else if(ingredients.isEmpty() && !tags.isEmpty()){ // we only have tags !
+            query = query.concat(tagNames);
+            query = query.concat(
+                    "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+                    "        RETURN r.id, r.name, collect(t.name) AS TagName\n" +
+                    "        ORDER BY size(collect(t.name)) DESC");
+        }
+
+        /*
+        UNWIND ["clove garlic", "milk", "salt"] AS ingredientName
+        UNWIND ["pie", "breakfast", "fruit"] AS tagName
+        MATCH (r:Recipe)-->(ingredient {name: ingredientName})
+        MATCH (r:Recipe)-->(t:Tag{name: tagName})
+        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName
+        ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC
+        */
+        StatementResult queryResult = executeQery(query);
+
+        while (queryResult.hasNext()){
+            result.add(queryResult.next().get(0));
+        }
+
+        return result;
+    }
+
+    private StatementResult executeQery( String query ){
+        try ( Session session = this._driver.session() ){
+            return session.run( query);
+        }
+    }
+
+    private String CollectionToString(Collection<String> collection){
+        String collectionString = "[";
+        for(String element : collection){
+            collectionString = collectionString.concat("\""+element+"\", ");
+        }
+        collectionString = collectionString.substring(0, collectionString.length() - 2);
+        collectionString = collectionString.concat("]");
+        return collectionString;
     }
 }
