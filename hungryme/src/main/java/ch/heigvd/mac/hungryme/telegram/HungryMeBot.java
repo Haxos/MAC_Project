@@ -112,42 +112,9 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 // replace the original message
                 replaceMessage(call_data[1], userId, chat_id, message_id);
             }else if (call_data[0].length() == "5e1c74cefd1a3f219f977b2a".length() && call_data.length == 1) {
-                String answer = format(_documentDB.getRecipeById(call_data[0]));
-                answer = addFooterInfo(answer, call_data[0] ,userId);
 
-                SendMessage new_message = new SendMessage()
-                        .setChatId(chat_id)
-                        .setText(answer)
-                        .setParseMode(ParseMode.HTML);
+                sendRecipeToUser(call_data[0], userId, chat_id);
 
-                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-
-                // add all recipe buttons
-
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                if(!_graphDB.isRecipeLiked(call_data[0], userId))
-                    rowInline.add(new InlineKeyboardButton().setText(like).setCallbackData(like+" "+ call_data[0]));
-
-                if(!_graphDB.isRecipeDisliked(call_data[0], userId))
-                    rowInline.add(new InlineKeyboardButton().setText(dislike).setCallbackData(dislike+" "+ call_data[0]));
-
-                if(!_graphDB.isRecipeFavorite(call_data[0], userId)) {
-                    rowInline.add(new InlineKeyboardButton().setText(addFav).setCallbackData(addFav + " " + call_data[0]));
-                }else{
-                    rowInline.add(new InlineKeyboardButton().setText(remFav).setCallbackData(remFav + " " + call_data[0]));
-                }
-                rowsInline.add(rowInline);
-
-                // Add it to the message
-                markupInline.setKeyboard(rowsInline);
-                new_message.setReplyMarkup(markupInline);
-
-                try {
-                    execute(new_message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
             }else if (call_data[0].length() == "5e1c74cefd1a3f219f977b2a".length() && call_data.length > 1) {
                 SendMessage new_message = new SendMessage()
                         .setChatId(chat_id)
@@ -342,6 +309,34 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 .setText(answer)
                 .setParseMode(ParseMode.HTML);
 
+        new_message.setReplyMarkup(getMessageButtons(recipeId, userId));
+
+        try {
+            execute(new_message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendRecipeToUser(String recipeId, String userId, long chatId){
+        String answer = format(_documentDB.getRecipeById(recipeId));
+        answer = addFooterInfo(answer, recipeId ,userId);
+
+        SendMessage new_message = new SendMessage()
+                .setChatId(chatId)
+                .setText(answer)
+                .setParseMode(ParseMode.HTML);
+
+        new_message.setReplyMarkup(getMessageButtons(recipeId, userId));
+
+        try {
+            execute(new_message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private InlineKeyboardMarkup getMessageButtons(String recipeId, String userId){
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
@@ -363,12 +358,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
 
         // Add it to the message
         markupInline.setKeyboard(rowsInline);
-        new_message.setReplyMarkup(markupInline);
 
-        try {
-            execute(new_message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+        return markupInline;
     }
 }
