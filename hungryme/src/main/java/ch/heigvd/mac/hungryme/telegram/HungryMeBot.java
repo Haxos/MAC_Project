@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import java.lang.Math;
-
 import static java.lang.Math.toIntExact;
 
 public class HungryMeBot extends TelegramLongPollingBot {
@@ -46,8 +44,6 @@ public class HungryMeBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         System.out.println(update.toString());
 
-        //Recipe recipe = _documentDB.getRecipeById("5e1c74cefd1a3f219f977b2a");
-
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -60,10 +56,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
             );
             _graphDB.addUser(chatUser);
 
-
             // tockenize the message
             String tockens[]= update.getMessage().getText().toLowerCase().split("\\s+");
-
 
             // parse the message and get the replies
             ArrayList<SendMessage> messages = parseResult(tockens, update.getMessage().getChatId());
@@ -85,32 +79,31 @@ public class HungryMeBot extends TelegramLongPollingBot {
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
 
-            if(call_data[0].equals(like)){
-                if(_graphDB.isRecipeDisliked(call_data[1], userId)){
-                    _graphDB.unDislikeRecipe(call_data[1], userId);
-                }else {
-                    _graphDB.likeRecipe(call_data[1], userId);
-                }
+            if(call_data[0].equals(like) ||
+                    call_data[0].equals(dislike) ||
+                    call_data[0].equals(addFav) ||
+                    call_data[0].equals(remFav)){
 
-                // replace the original message
-                replaceMessage(call_data[1], userId, chat_id, message_id);
-
-            }else if(call_data[0].equals(dislike)){
-                if(_graphDB.isRecipeLiked(call_data[1], userId)){
-                    _graphDB.unLikeRecipe(call_data[1], userId);
-                }else{
-                    _graphDB.dislikeRecipe(call_data[1], userId);
+                if(call_data[0].equals(like)){
+                    if(_graphDB.isRecipeDisliked(call_data[1], userId)){
+                        _graphDB.unDislikeRecipe(call_data[1], userId);
+                    }else {
+                        _graphDB.likeRecipe(call_data[1], userId);
+                    }
+                }else if(call_data[0].equals(dislike)){
+                    if(_graphDB.isRecipeLiked(call_data[1], userId)){
+                        _graphDB.unLikeRecipe(call_data[1], userId);
+                    }else{
+                        _graphDB.dislikeRecipe(call_data[1], userId);
+                    }
+                }else if(call_data[0].equals(addFav)){
+                    _graphDB.favoriteRecipe(call_data[1], userId);
+                }else if(call_data[0].equals(remFav)) {
+                    _graphDB.unFavoriteRecipe(call_data[1], userId);
                 }
                 // replace the original message
                 replaceMessage(call_data[1], userId, chat_id, message_id);
-            }else if(call_data[0].equals(addFav)){
-                _graphDB.favoriteRecipe(call_data[1], userId);
-                // replace the original message
-                replaceMessage(call_data[1], userId, chat_id, message_id);
-            }else if(call_data[0].equals(remFav)){
-                _graphDB.unFavoriteRecipe(call_data[1], userId);
-                // replace the original message
-                replaceMessage(call_data[1], userId, chat_id, message_id);
+
             }else if (call_data[0].length() == "5e1c74cefd1a3f219f977b2a".length() && call_data.length == 1) {
 
                 sendRecipeToUser(call_data[0], userId, chat_id);
@@ -275,9 +268,6 @@ public class HungryMeBot extends TelegramLongPollingBot {
             message.setReplyMarkup(markupInline);
             messages.add(message);
         }
-
-
-
         return messages;
     }
 
