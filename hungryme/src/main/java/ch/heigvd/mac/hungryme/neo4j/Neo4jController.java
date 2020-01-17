@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphDatabase, AutoCloseable {
@@ -181,12 +181,12 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
                 "})";
     }
 
-    public List<String> getRecipes(Collection<String> ingredients, Collection<String> tags ){
+    public  LinkedList<ArrayList<String>> getRecipes(Collection<String> ingredients, Collection<String> tags ){
         String ingredientsNames = "";
         String tagNames = "";
         String query = "";
 
-        List result = new ArrayList<String>();
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
 
         if(!ingredients.isEmpty()){
             ingredientsNames= "UNWIND " + CollectionToString(ingredients) + " AS ingredientName\n";
@@ -224,12 +224,17 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName
         ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC
         */
-        StatementResult queryResult = executeQery(query);
-
-        while (queryResult.hasNext()){
-            result.add(queryResult.next().get(0));
+        if(query.length() != 0) {
+            StatementResult queryResult = executeQery(query);
+            while (queryResult.hasNext()) {
+                Record currentVal = queryResult.next();
+                ArrayList<String> recipeInfo = new ArrayList<>();
+                recipeInfo.add(currentVal.get(0).asString());
+                recipeInfo.add(currentVal.get(1).asString());
+                //result.add(recipeInfo);
+                result.push(recipeInfo);
+            }
         }
-
         return result;
     }
 
@@ -248,4 +253,127 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         collectionString = collectionString.concat("]");
         return collectionString;
     }
+
+
+    /*
+    *
+    *
+ MATCH (a:Person),(b:Person)
+WHERE a.name = 'A' AND b.name = 'B'
+CREATE (a)-[r:RELTYPE { name: a.name + '<->' + b.name }]->(b)
+RETURN type(r), r.name
+    * */
+
+    public void likeRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (n:User), (m:Recipe)\n"+
+                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
+                                " MERGE (n)-[:liked]->(m)"
+                );
+                return "Relation liked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} added successfully";
+            });
+        }
+    }
+
+    public void unLikeRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (:User { id: \""+ userId +"\" })-[r:liked]->(:Recipe { id: \""+ recipeId +"\" })\n" +
+                                "DELETE r"
+                );
+                return "Relation liked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} successfully removes";
+            });
+        }
+    }
+
+    public boolean isRecipeLiked(String recipeId, String userId) {
+        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:liked]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
+                "RETURN u,l,r";
+
+        StatementResult queryResult = executeQery(query);
+        return queryResult.hasNext();
+    }
+
+    public void dislikeRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (n:User), (m:Recipe)\n"+
+                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
+                                " MERGE (n)-[:disliked]->(m)"
+                );
+                return "Relation disliked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} added successfully";
+            });
+        }
+    }
+
+    public void unDislikeRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (:User { id: \""+ userId +"\" })-[r:disliked]->(:Recipe { id: \""+ recipeId +"\" })\n" +
+                                "DELETE r"
+                );
+                return "Relation disliked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} successfully removes";
+            });
+        }
+    }
+
+    public boolean isRecipeDisliked(String recipeId, String userId) {
+        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:disliked]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
+                "RETURN u,l,r";
+
+        StatementResult queryResult = executeQery(query);
+        return queryResult.hasNext();
+    }
+
+    public void favoriteRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (n:User), (m:Recipe)\n"+
+                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
+                                " MERGE (n)-[:favorite]->(m)"
+                );
+                return "Relation disliked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} added successfully";
+            });
+        }
+    }
+
+    public void unFavoriteRecipe(String recipeId, String userId) {
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(
+                        "MATCH (:User { id: \""+ userId +"\" })-[r:favorite]->(:Recipe { id: \""+ recipeId +"\" })\n" +
+                                "DELETE r"
+                );
+                return "Relation disliked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} successfully removes";
+            });
+        }
+    }
+
+    public boolean isRecipeFavorite(String recipeId, String userId) {
+        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:favorite]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
+                "RETURN u,l,r";
+
+        StatementResult queryResult = executeQery(query);
+        return queryResult.hasNext();
+    }
+
+
+
+    /*
+MATCH (:User { id: "userId" })-[r:liked]->(:Recipe { id: "recipeId" })
+DELETE r
+
+*/
 }
