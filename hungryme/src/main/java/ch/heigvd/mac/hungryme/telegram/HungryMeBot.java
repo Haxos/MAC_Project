@@ -309,6 +309,10 @@ public class HungryMeBot extends TelegramLongPollingBot {
     }
 
     private void sendRecipeToUser(String recipeId, String userId, long chatId){
+
+        //add relation ship if not exists
+        _graphDB.lookedAtRecipe(recipeId, userId);
+
         String answer = format(_documentDB.getRecipeById(recipeId));
         answer = addFooterInfo(answer, recipeId ,userId);
 

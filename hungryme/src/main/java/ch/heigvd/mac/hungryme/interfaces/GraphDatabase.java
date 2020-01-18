@@ -27,4 +27,10 @@ public interface GraphDatabase {
     void favoriteRecipe(String recipeId, String userId);
     void unFavoriteRecipe(String recipeId, String userId);
     boolean isRecipeFavorite(String recipeId, String userId);
+
+    LinkedList<ArrayList<String>> getFavoriteRecipes(String userId );
+
+    boolean isUserLinkedToRecipe(String recipeId, String userId);
+
+    void lookedAtRecipe(String recipeId, String userId);
 }

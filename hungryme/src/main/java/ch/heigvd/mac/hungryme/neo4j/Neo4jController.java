@@ -238,6 +238,27 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         return result;
     }
 
+    // MATCH (n:User{id:"455157036"})-[:liked]->(m:Recipe)
+    //    // RETURN m
+
+    public  LinkedList<ArrayList<String>> getFavoriteRecipes(String userId ){
+        String query = "MATCH (n:User{id:\""+ userId +"\"})-[:liked]->(m:Recipe)\n" +
+                "RETURN m";
+
+        StatementResult queryResult = executeQery(query);
+
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
+
+        while (queryResult.hasNext()) {
+            Record currentVal = queryResult.next();
+            ArrayList<String> recipeInfo = new ArrayList<>();
+            recipeInfo.add(currentVal.get(0).asString());
+            recipeInfo.add(currentVal.get(1).asString());
+            result.push(recipeInfo);
+        }
+        return result;
+    }
+
     private StatementResult executeQery( String query ){
         try ( Session session = this._driver.session() ){
             return session.run( query);
@@ -254,51 +275,119 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         return collectionString;
     }
 
+    public void lookedAtRecipe(String recipeId, String userId){
+
+        if(isUserLinkedToRecipe(recipeId, userId))
+            return;
+
+        String query = "MATCH (n:User), (m:Recipe)\n" +
+                "WHERE n.id = \""+userId+"\" AND m.id = \""+recipeId+"\"\n" +
+                "MERGE (n)-[l:looked]->(m)\n" +
+                "SET l.liked = false\n" +
+                "SET l.disliked = false\n" +
+                "SET l.favorite = false\n";
+
+        try (Session session = this._driver.session()) {
+            session.writeTransaction(transaction -> {
+                transaction.run(query);
+                return "Relation looked between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} added successfully";
+            });
+        }
+    }
+
+    public boolean isUserLinkedToRecipe(String recipeId, String userId) {
+        String query = "MATCH (u:User { id: \""+ userId +"\" })-->(r:Recipe { id: \""+ recipeId +"\" })\n" +
+                "RETURN u,r";
+
+        StatementResult queryResult = executeQery(query);
+        return queryResult.hasNext();
+    }
 
     /*
-    *
-    *
  MATCH (a:Person),(b:Person)
 WHERE a.name = 'A' AND b.name = 'B'
 CREATE (a)-[r:RELTYPE { name: a.name + '<->' + b.name }]->(b)
 RETURN type(r), r.name
     * */
 
-    public void likeRecipe(String recipeId, String userId) {
+    private void relationShipUpadte(String recipeId, String userId, String relation, String value){
+        String query ="MATCH (n:User{id:\""+ userId +"\"})-[l:looked]->(m:Recipe{id:\""+ recipeId +"\"})\n" +
+                "SET l."+relation+" = "+value+"";
         try (Session session = this._driver.session()) {
             session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (n:User), (m:Recipe)\n"+
-                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
-                                " MERGE (n)-[:liked]->(m)"
-                );
-                return "Relation liked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} added successfully";
+                transaction.run(query);
+                return "Relation "+relation+" between User: {id: " + userId + "} " +
+                        "and Recipe: {id: " + recipeId + "} successfully updated with value "+ value;
             });
         }
+    }
+
+    private boolean statusOfRelationValue(String recipeId, String userId, String relation){
+        if(!isUserLinkedToRecipe(recipeId, userId))
+            return false;
+
+        String query ="MATCH (n:User{id:\""+userId+"\"})-[l:looked]->(m:Recipe{id:\""+recipeId+"\"})\n" +
+                "RETURN l."+relation;
+        StatementResult queryResult = executeQery(query);
+        if(queryResult.hasNext()){
+            return queryResult.next().get(0).asBoolean();
+        }else{
+            return false;
+        }
+    }
+
+    public void likeRecipe(String recipeId, String userId) {
+        relationShipUpadte(recipeId, userId, "liked", "true");
     }
 
     public void unLikeRecipe(String recipeId, String userId) {
-        try (Session session = this._driver.session()) {
-            session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (:User { id: \""+ userId +"\" })-[r:liked]->(:Recipe { id: \""+ recipeId +"\" })\n" +
-                                "DELETE r"
-                );
-                return "Relation liked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} successfully removes";
-            });
-        }
+        relationShipUpadte(recipeId, userId, "liked", "false");
     }
 
     public boolean isRecipeLiked(String recipeId, String userId) {
-        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:liked]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
-                "RETURN u,l,r";
-
-        StatementResult queryResult = executeQery(query);
-        return queryResult.hasNext();
+        return statusOfRelationValue(recipeId, userId, "liked");
     }
 
+    public void dislikeRecipe(String recipeId, String userId) {
+        relationShipUpadte(recipeId, userId, "disliked", "true");
+    }
+
+    public void unDislikeRecipe(String recipeId, String userId) {
+        relationShipUpadte(recipeId, userId, "disliked", "false");
+    }
+
+    public boolean isRecipeDisliked(String recipeId, String userId) {
+        return statusOfRelationValue(recipeId, userId, "disliked");
+    }
+
+    public void favoriteRecipe(String recipeId, String userId) {
+        relationShipUpadte(recipeId, userId, "favorite", "true");
+    }
+
+    public void unFavoriteRecipe(String recipeId, String userId) {
+        relationShipUpadte(recipeId, userId, "favorite", "false");
+    }
+
+    public boolean isRecipeFavorite(String recipeId, String userId) {
+        return statusOfRelationValue(recipeId, userId, "favorite");
+    }
+
+
+
+
+    /*        StatementResult queryResult = executeQery(query);
+
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
+
+        while (queryResult.hasNext()) {
+            Record currentVal = queryResult.next();
+            ArrayList<String> recipeInfo = new ArrayList<>();
+            recipeInfo.add(currentVal.get(0).asString());
+            recipeInfo.add(currentVal.get(1).asString());
+            result.push(recipeInfo);
+        }*/
+/*
     public void dislikeRecipe(String recipeId, String userId) {
         try (Session session = this._driver.session()) {
             session.writeTransaction(transaction -> {
@@ -368,7 +457,7 @@ RETURN type(r), r.name
         StatementResult queryResult = executeQery(query);
         return queryResult.hasNext();
     }
-
+*/
 
 
     /*
