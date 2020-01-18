@@ -35,4 +35,6 @@ public interface GraphDatabase {
     void lookedAtRecipe(String recipeId, String userId);
 
     LinkedList<ArrayList<String>> getMostAppreciatedRecipes();
+
+    LinkedList<ArrayList<String>> getNewRecipesBasedOnUserLikes(String userId);
 }
