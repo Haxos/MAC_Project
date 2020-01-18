@@ -19,10 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.toIntExact;
 
@@ -42,7 +39,6 @@ public class HungryMeBot extends TelegramLongPollingBot {
     }
 
     public void onUpdateReceived(Update update) {
-        System.out.println(update.toString());
 
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -195,8 +191,12 @@ public class HungryMeBot extends TelegramLongPollingBot {
        return _documentDB.getRecipeById(recipeId).getName();
     }
 
-    //private List<String> parseResult(String[] tokens){
     private ArrayList<SendMessage> parseResult(String[] tokens,String userId, Long chatId){
+        // check if help or /start
+        if(tokens[0].equals("/start") || tokens[0].toLowerCase().equals("help")) {
+            return helpMessage(chatId);
+        }
+
         // keywords
         final String unique = "a";
         final String forTags = "for";
@@ -212,11 +212,6 @@ public class HungryMeBot extends TelegramLongPollingBot {
 
         ArrayList<SendMessage> messages = new ArrayList<SendMessage>();
 
-        if(tokens[0].equals(unique)){  //unique recipe
-            System.out.println("==> unique recipe");
-        }
-        //a {time : (very) fast/short} recipe(s) with {ingredients} for {tags}
-
         // get ingredients
         for(int i = Arrays.asList(tokens).indexOf(forIngredients); i>=0 && i<tokens.length && !tokens[i].equals(forTags); i++){
             if(!tokens[i].equals(forIngredients))
@@ -229,13 +224,13 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 tags.add(tokens[i]);
         }
 
-        if(tokens[0].toLowerCase().equals("liked") ||
+        if(tokens[0].toLowerCase().equals("liked") || // ----------------------------------------- Show favorite recipes
                 tokens[0].toLowerCase().equals("favorite") ||
                 tokens[0].toLowerCase().equals("favorites") ||
                 tokens[0].toLowerCase().equals("favs") ||
                 tokens[0].equals(addFav)){
             recipesId = _graphDB.getUserFavoriteRecipes(userId );
-        }else if (tokens[0].toLowerCase().equals("surprise") || tokens[0].equals("¯\\_(ツ)_/¯")){
+        }else if (tokens[0].toLowerCase().equals("surprise") || tokens[0].equals("¯\\_(ツ)_/¯")){ // Show surprise recipes
             recipesId = _graphDB.getNewRecipesBasedOnUserLikes(userId);
             if(recipesId.size() == 0){
                 recipesId = _graphDB.getMostUnseenAppreciatedRecipes(userId);
@@ -247,45 +242,59 @@ public class HungryMeBot extends TelegramLongPollingBot {
             recipesId = _graphDB.getRecipes(ingredients, tags, userId, getSpeedLevel(tokens));
         }
 
-        if(recipesId.isEmpty()){
+        if(recipesId.isEmpty()){// ----------------------------------------- Message no recipes found
             SendMessage message = new SendMessage();
             message.setChatId(chatId); // long chatId
             message.setParseMode(ParseMode.HTML);
             message.setText("Sorry... Nothing was found...\nPlease try again !");
             messages.add(message);
-        }else{
-            SendMessage message = new SendMessage();
-            message.setChatId(chatId); // long chatId
-            message.setText("Here are some recipes !");
-            InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-            int recipeOriginalLength = recipesId.size();
-            for(int i = 0; i<5 && i<recipeOriginalLength; i++){
-                ArrayList<String> recipe = recipesId.pollFirst();
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                rowInline.add(new InlineKeyboardButton().setText(recipe.get(1)).setCallbackData(recipe.get(0)));
-                rowsInline.add(rowInline);
+        }else{// ----------------------------------------- Found recipe list
+            if(tokens[0].toLowerCase().equals(unique)){// ----------------------------------------- Send only one recipe
+                ArrayList<String> recipe = recipesId.get(new Random().nextInt(recipesId.size()));
+                String answer = format(_documentDB.getRecipeById(recipe.get(0)));
+                answer = addFooterInfo(answer, recipe.get(0) ,userId);
+
+                SendMessage new_message = new SendMessage()
+                        .setChatId(chatId)
+                        .setText(answer)
+                        .setParseMode(ParseMode.HTML);
+                new_message.setReplyMarkup(getMessageButtons(recipe.get(0), userId));
+                messages.add(new_message);
+            }else {// -------------------------------------------------------------------------- Send recipe list
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId); // long chatId
+                message.setText("Here are some recipes !");
+                InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                int recipeOriginalLength = recipesId.size();
+                for (int i = 0; i < 5 && i < recipeOriginalLength; i++) {
+                    ArrayList<String> recipe = recipesId.pollFirst();
+                    List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                    rowInline.add(new InlineKeyboardButton().setText(recipe.get(1)).setCallbackData(recipe.get(0)));
+                    rowsInline.add(rowInline);
+                }
+
+                if (recipesId.size() > 0) {
+                    String remainingRecipeId = "";
+
+                    for (int i = 0; i < recipesId.size() && remainingRecipeId.length() <= 40; i++) {
+                        remainingRecipeId = remainingRecipeId.concat(recipesId.get(i).get(0) + " ");
+                    }
+                    List<InlineKeyboardButton> rowInline = new ArrayList<>();
+                    if (recipesId.size() == 1) {
+                        rowInline.add(new InlineKeyboardButton().setText(recipesId.get(0).get(1)).setCallbackData(remainingRecipeId));
+                    } else {
+                        rowInline.add(new InlineKeyboardButton().setText("➕ Show more ! ➕").setCallbackData(remainingRecipeId));
+                    }
+                    rowsInline.add(rowInline);
+                }
+
+                // Add it to the message
+                markupInline.setKeyboard(rowsInline);
+                message.setReplyMarkup(markupInline);
+                messages.add(message);
             }
 
-            if(recipesId.size() > 0) {
-                String remainingRecipeId = "";
-
-                for(int i = 0; i< recipesId.size() && remainingRecipeId.length() <= 40; i++){
-                    remainingRecipeId = remainingRecipeId.concat(recipesId.get(i).get(0)+" ");
-                }
-                List<InlineKeyboardButton> rowInline = new ArrayList<>();
-                if(recipesId.size() == 1) {
-                    rowInline.add(new InlineKeyboardButton().setText(recipesId.get(0).get(1)).setCallbackData(remainingRecipeId));
-                }else{
-                    rowInline.add(new InlineKeyboardButton().setText("➕ Show more ! ➕").setCallbackData(remainingRecipeId));
-                }
-                rowsInline.add(rowInline);
-            }
-
-            // Add it to the message
-            markupInline.setKeyboard(rowsInline);
-            message.setReplyMarkup(markupInline);
-            messages.add(message);
         }
         return messages;
     }
@@ -387,5 +396,47 @@ public class HungryMeBot extends TelegramLongPollingBot {
         markupInline.setKeyboard(rowsInline);
 
         return markupInline;
+    }
+
+    private ArrayList<SendMessage>  helpMessage(Long chatId){
+        ArrayList<SendMessage> messageLst = new ArrayList<SendMessage>();
+        String text = "<b><u>Hnugry me help</u></b>\n" +
+                "\n" +
+                "<b>What is HungyMe ?</b>\n" +
+                "Hungry me is a bot that allows you to search for recipes based on ingredients or tags.\n" +
+                "The recipes with the mots ingredients or tags will be proposed to you\n" +
+                "You can like, dislike or add each recipe to a favorite list\n" +
+                "\n" +
+                "<b>How to use</b>\n" +
+                "The basic search works the following way:\n" +
+                "(a) {time : (very) fast/short} recipe(s) with {ingredients} for {tags}.\n" +
+                "\n" +
+                "<u>Eplications</u>\n" +
+                "<b>a</b> : (optionnal) when used, only one recipe will directly be displayes\n" +
+                "<b>{time : (very) fast/short}</b> : (optionnal) determins the maximum ammount of time a recipe cant take : a short recipe = 30 min a very short recipe = 50min\n" +
+                "<b>recipe(s)</b> : (optionnal) exists only to make the research ore friendly\n" +
+                "<b>with {ingredients}</b> : list the ingredients you want in your recipe\n" +
+                "<b>for {tags}</b> : list the tags that should represent the recipes you are looking for\n" +
+                "<i>In order to get a result, ou should use the keyword(s) <u>with</u> and/or  <u>for</u></i>\n" +
+                "\n" +
+                "<u>Examples</u>\n" +
+                "a recipe with pecans for snack\n" +
+                "fast recipe with garlic salt pepper\n" +
+                "\n" +
+                "<b>Options</b>\n" +
+                "You can like/dislike a recipe or add it to your favorites clicking iôn the buttons \uD83D\uDC4D \uD83D\uDC4E ❤️ that appear under the recipe\n" +
+                "To see the recipes in you favorite list, jus send ❤️ or <u>favs</u>\n" +
+                "\n" +
+                "<b>Surprise recipe</b>\n" +
+                "If you do not feel inspired for a recipe jus send <u>surprise</u>\n" +
+                "A lis of recipies that you haven't seen yet will appear!\n" +
+                "These recipes are based on the ones you likes or added to your favorite list !";
+
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId); // long chatId
+        message.setParseMode(ParseMode.HTML);
+        message.setText(text);
+        messageLst.add(message);
+        return messageLst;
     }
 }

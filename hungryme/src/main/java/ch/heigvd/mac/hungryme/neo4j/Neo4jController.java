@@ -191,15 +191,12 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
             case 1 :
                 speed = "MATCH (u:User{id:\""+ userId +"\"})\n" +
                     "WHERE (r.cooktime + r.preptime + r.waittime) > 0 AND (r.cooktime + r.preptime + r.waittime) < u.timeFast * 60\n";
-                    System.out.println("#### ==> fast");
                 break;
             case 2 :
                 speed = "MATCH (u:User{id:\""+ userId +"\"})\n" +
                         "WHERE (r.cooktime + r.preptime + r.waittime) > 0 AND (r.cooktime + r.preptime + r.waittime) < u.timeVeryFast * 60\n";
-                System.out.println("#### ==> timeVeryFast");
                 break;
             default:
-                System.out.println("#### ==> normal");
                 break;
         }
 
