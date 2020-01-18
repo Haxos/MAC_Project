@@ -238,12 +238,31 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         return result;
     }
 
+    public LinkedList<ArrayList<String>> getMostAppreciatedRecipes(){
+        String query = "MATCH (a:User)-[l:looked]->(b:Recipe)\n" +
+                "WHERE l.liked = true OR l.favorite = true\n" +
+                "RETURN b, COLLECT(a) as users\n" +
+                "ORDER BY SIZE(users) DESC";
+
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
+
+        StatementResult queryResult = executeQery(query);
+        while (queryResult.hasNext()) {
+            Record currentVal = queryResult.next();
+            ArrayList<String> recipeInfo = new ArrayList<>();
+            recipeInfo.add(currentVal.get(0).asString());
+            recipeInfo.add(currentVal.get(1).asString());
+            result.push(recipeInfo);
+        }
+        return result;
+    }
+
     // MATCH (n:User{id:"455157036"})-[:liked]->(m:Recipe)
     //    // RETURN m
 
-    public  LinkedList<ArrayList<String>> getFavoriteRecipes(String userId ){
-        String query = "MATCH (n:User{id:\""+ userId +"\"})-[:liked]->(m:Recipe)\n" +
-                "RETURN m";
+    public  LinkedList<ArrayList<String>> getUserFavoriteRecipes(String userId ){
+        String query = "MATCH (a:User{id:\""+ userId +"\"})-[l:looked{favorite:true}]->(b:Recipe)\n" +
+                "RETURN b";
 
         StatementResult queryResult = executeQery(query);
 
@@ -258,6 +277,26 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         }
         return result;
     }
+
+    public  LinkedList<ArrayList<String>> getUserMostAppreciatedRecipes(String userId ){
+        String query = "MATCH (a:User{id:\""+ userId +"\"})-[l:looked]->(b:Recipe)\n" +
+                "WHERE l.liked = true OR l.favorite = true\n" +
+                "RETURN b";
+
+        StatementResult queryResult = executeQery(query);
+
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
+
+        while (queryResult.hasNext()) {
+            Record currentVal = queryResult.next();
+            ArrayList<String> recipeInfo = new ArrayList<>();
+            recipeInfo.add(currentVal.get(0).asString());
+            recipeInfo.add(currentVal.get(1).asString());
+            result.push(recipeInfo);
+        }
+        return result;
+    }
+
 
     private StatementResult executeQery( String query ){
         try ( Session session = this._driver.session() ){
@@ -374,8 +413,6 @@ RETURN type(r), r.name
     }
 
 
-
-
     /*        StatementResult queryResult = executeQery(query);
 
         LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
@@ -387,78 +424,6 @@ RETURN type(r), r.name
             recipeInfo.add(currentVal.get(1).asString());
             result.push(recipeInfo);
         }*/
-/*
-    public void dislikeRecipe(String recipeId, String userId) {
-        try (Session session = this._driver.session()) {
-            session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (n:User), (m:Recipe)\n"+
-                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
-                                " MERGE (n)-[:disliked]->(m)"
-                );
-                return "Relation disliked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} added successfully";
-            });
-        }
-    }
-
-    public void unDislikeRecipe(String recipeId, String userId) {
-        try (Session session = this._driver.session()) {
-            session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (:User { id: \""+ userId +"\" })-[r:disliked]->(:Recipe { id: \""+ recipeId +"\" })\n" +
-                                "DELETE r"
-                );
-                return "Relation disliked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} successfully removes";
-            });
-        }
-    }
-
-    public boolean isRecipeDisliked(String recipeId, String userId) {
-        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:disliked]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
-                "RETURN u,l,r";
-
-        StatementResult queryResult = executeQery(query);
-        return queryResult.hasNext();
-    }
-
-    public void favoriteRecipe(String recipeId, String userId) {
-        try (Session session = this._driver.session()) {
-            session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (n:User), (m:Recipe)\n"+
-                                "WHERE n.id = \"" + userId + "\" AND m.id = \"" + recipeId +"\"\n"+
-                                " MERGE (n)-[:favorite]->(m)"
-                );
-                return "Relation disliked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} added successfully";
-            });
-        }
-    }
-
-    public void unFavoriteRecipe(String recipeId, String userId) {
-        try (Session session = this._driver.session()) {
-            session.writeTransaction(transaction -> {
-                transaction.run(
-                        "MATCH (:User { id: \""+ userId +"\" })-[r:favorite]->(:Recipe { id: \""+ recipeId +"\" })\n" +
-                                "DELETE r"
-                );
-                return "Relation disliked between User: {id: " + userId + "} " +
-                        "and Recipe: {id: " + recipeId + "} successfully removes";
-            });
-        }
-    }
-
-    public boolean isRecipeFavorite(String recipeId, String userId) {
-        String query = "MATCH (u:User { id: \""+ userId +"\" })-[l:favorite]->(r:Recipe { id: \""+ recipeId +"\" })\n" +
-                "RETURN u,l,r";
-
-        StatementResult queryResult = executeQery(query);
-        return queryResult.hasNext();
-    }
-*/
-
 
     /*
 MATCH (:User { id: "userId" })-[r:liked]->(:Recipe { id: "recipeId" })

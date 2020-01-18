@@ -25,3 +25,11 @@ MATCH (r:Recipe)-->(ingredient {name: ingredientName})
 RETURN r.name, collect(ingredient.name) AS otherIngredients
 ORDER BY size(collect(ingredient.name)) DESC
 ````
+
+6) get Recipes by most likes or favorite
+```
+MATCH (a:User)-[l:looked]->(b:Recipe)
+WHERE l.liked = true OR l.favorite = true
+RETURN b, COLLECT(a) as users
+ORDER BY SIZE(users) DESC
+```

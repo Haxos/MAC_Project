@@ -240,8 +240,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
             message.setText("Here are some recipes !");
             InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-
-            for(int i = 0; i<5 && i<recipesId.size(); i++){
+            int recipeOriginalLength = recipesId.size();
+            for(int i = 0; i<5 && i<recipeOriginalLength; i++){
                 ArrayList<String> recipe = recipesId.pollFirst();
                 List<InlineKeyboardButton> rowInline = new ArrayList<>();
                 rowInline.add(new InlineKeyboardButton().setText(recipe.get(1)).setCallbackData(recipe.get(0)));
