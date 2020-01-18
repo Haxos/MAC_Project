@@ -181,10 +181,27 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
                 "})";
     }
 
-    public  LinkedList<ArrayList<String>> getRecipes(Collection<String> ingredients, Collection<String> tags ){
+    public  LinkedList<ArrayList<String>> getRecipes(Collection<String> ingredients, Collection<String> tags, String userId, int speedLevel ){
         String ingredientsNames = "";
         String tagNames = "";
         String query = "";
+        String speed = "";
+
+        switch (speedLevel){
+            case 1 :
+                speed = "MATCH (u:User{id:\""+ userId +"\"})\n" +
+                    "WHERE (r.cooktime + r.preptime + r.waittime) > 0 AND (r.cooktime + r.preptime + r.waittime) < u.timeFast * 60\n";
+                    System.out.println("#### ==> fast");
+                break;
+            case 2:
+                speed = "MATCH (u:User{id:\""+ userId +"\"})\n" +
+                        "WHERE (r.cooktime + r.preptime + r.waittime) > 0 AND (r.cooktime + r.preptime + r.waittime) < u.timeVeryFast * 60\n";
+                System.out.println("#### ==> timeVeryFast");
+                break;
+            default:
+                System.out.println("#### ==> normal");
+                break;
+        }
 
         LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
 
@@ -201,29 +218,24 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
             query = query.concat(tagNames);
             query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
                     "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+                            speed +
                     "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName\n" +
                     "        ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC");
         }else if(!ingredients.isEmpty() && tags.isEmpty()){ // we only have ingredients
             query = query.concat(ingredientsNames);
             query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
+                            speed +
                     "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients\n" +
                     "        ORDER BY size(collect(ingredient.name)) DESC");
         }else if(ingredients.isEmpty() && !tags.isEmpty()){ // we only have tags !
             query = query.concat(tagNames);
             query = query.concat(
                     "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+                            speed +
                     "        RETURN r.id, r.name, collect(t.name) AS TagName\n" +
                     "        ORDER BY size(collect(t.name)) DESC");
         }
 
-        /*
-        UNWIND ["clove garlic", "milk", "salt"] AS ingredientName
-        UNWIND ["pie", "breakfast", "fruit"] AS tagName
-        MATCH (r:Recipe)-->(ingredient {name: ingredientName})
-        MATCH (r:Recipe)-->(t:Tag{name: tagName})
-        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName
-        ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC
-        */
         if(query.length() != 0) {
             StatementResult queryResult = executeQery(query);
             while (queryResult.hasNext()) {
@@ -231,7 +243,6 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
                 ArrayList<String> recipeInfo = new ArrayList<>();
                 recipeInfo.add(currentVal.get(0).asString());
                 recipeInfo.add(currentVal.get(1).asString());
-                //result.add(recipeInfo);
                 result.push(recipeInfo);
             }
         }
@@ -276,9 +287,6 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         }
         return result;
     }
-
-    // MATCH (n:User{id:"455157036"})-[:liked]->(m:Recipe)
-    //    // RETURN m
 
     public LinkedList<ArrayList<String>> getUserFavoriteRecipes(String userId ){
         String query = "MATCH (a:User{id:\""+ userId +"\"})-[l:looked{favorite:true}]->(b:Recipe)\n" +
@@ -362,13 +370,6 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         StatementResult queryResult = executeQery(query);
         return queryResult.hasNext();
     }
-
-    /*
- MATCH (a:Person),(b:Person)
-WHERE a.name = 'A' AND b.name = 'B'
-CREATE (a)-[r:RELTYPE { name: a.name + '<->' + b.name }]->(b)
-RETURN type(r), r.name
-    * */
 
     private void relationShipUpadte(String recipeId, String userId, String relation, String value){
         String query ="MATCH (n:User{id:\""+ userId +"\"})-[l:looked]->(m:Recipe{id:\""+ recipeId +"\"})\n" +
@@ -454,22 +455,4 @@ RETURN type(r), r.name
         }
         return result;
     }
-
-    /*        StatementResult queryResult = executeQery(query);
-
-        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
-
-        while (queryResult.hasNext()) {
-            Record currentVal = queryResult.next();
-            ArrayList<String> recipeInfo = new ArrayList<>();
-            recipeInfo.add(currentVal.get(0).asString());
-            recipeInfo.add(currentVal.get(1).asString());
-            result.push(recipeInfo);
-        }*/
-
-    /*
-MATCH (:User { id: "userId" })-[r:liked]->(:Recipe { id: "recipeId" })
-DELETE r
-
-*/
 }

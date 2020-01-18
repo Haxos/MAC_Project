@@ -14,7 +14,7 @@ public interface GraphDatabase {
     void addIngredient(Ingredient ingredient);
     void addTag(String tag);
     void addUser(User user);
-    LinkedList<ArrayList<String>> getRecipes(Collection<String> ingredients, Collection<String> tags );
+    LinkedList<ArrayList<String>> getRecipes(Collection<String> ingredients, Collection<String> tags, String userId, int speedLevel );
 
     void likeRecipe(String recipeId, String userId);
     void unLikeRecipe(String recipeId, String userId);

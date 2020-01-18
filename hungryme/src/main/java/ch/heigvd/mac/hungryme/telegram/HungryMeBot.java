@@ -202,6 +202,8 @@ public class HungryMeBot extends TelegramLongPollingBot {
         final String forTags = "for";
         final String forIngredients = "with";
 
+        int speedLevel = 0;
+
         ArrayList<String> tags = new ArrayList<String>();
         ArrayList<String> ingredients = new ArrayList<String>();
 
@@ -235,7 +237,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 recipesId = _graphDB.getMostUnseenAppreciatedRecipes(userId);
             }
         }else {
-            recipesId = _graphDB.getRecipes(ingredients, tags);
+            recipesId = _graphDB.getRecipes(ingredients, tags, userId, getSpeedLevel(tokens));
         }
 
         if(recipesId.isEmpty()){
@@ -279,6 +281,20 @@ public class HungryMeBot extends TelegramLongPollingBot {
             messages.add(message);
         }
         return messages;
+    }
+
+    private int getSpeedLevel(String[] tokens){
+        int temp = Arrays.asList(tokens).indexOf("fast");
+        if(temp < 0){
+            temp = Arrays.asList(tokens).indexOf("short");
+        }
+        if(temp <0)
+            return 0;
+
+        if(temp > 1 && tokens[temp-1].equals("very"))
+            return 2;
+
+        return 1;
     }
 
     private String addFooterInfo(String recipe, String recipeId, String userId){
