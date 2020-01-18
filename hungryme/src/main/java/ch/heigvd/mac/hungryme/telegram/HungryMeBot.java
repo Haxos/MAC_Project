@@ -229,9 +229,9 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 tags.add(tokens[i]);
         }
 
-        if(tokens[0].equals("liked") || tokens[0].equals("favorite") || tokens[0].equals(addFav)){
+        if(tokens[0].toLowerCase().equals("liked") || tokens[0].toLowerCase().equals("favorite") || tokens[0].equals(addFav)){
             recipesId = _graphDB.getUserFavoriteRecipes(userId );
-        }else if (tokens[0].equals("suprise") || tokens[0].equals("¯\\_(ツ)_/¯")){
+        }else if (tokens[0].toLowerCase().equals("surprise") || tokens[0].equals("¯\\_(ツ)_/¯")){
             recipesId = _graphDB.getNewRecipesBasedOnUserLikes(userId);
             if(recipesId.size() == 0){
                 recipesId = _graphDB.getMostUnseenAppreciatedRecipes(userId);
@@ -291,7 +291,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
         if(temp <0)
             return 0;
 
-        if(temp > 1 && tokens[temp-1].equals("very"))
+        if(temp > 0 && tokens[temp-1].toLowerCase().equals("very"))
             return 2;
 
         return 1;
