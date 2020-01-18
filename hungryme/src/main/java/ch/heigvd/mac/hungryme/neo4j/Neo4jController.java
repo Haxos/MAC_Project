@@ -257,6 +257,26 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         return result;
     }
 
+    public LinkedList<ArrayList<String>> getMostUnseenAppreciatedRecipes(String userId){
+        String query = "MATCH (a:User)-[l:looked]->(b:Recipe)\n" +
+                "WHERE l.liked = true OR l.favorite = true\n" +
+                "AND NOT (:User{id:\"" + userId + "\"})-->(b)\n" +
+                "RETURN b.id, b.name, COLLECT(a) as users\n" +
+                "ORDER BY SIZE(users) DESC";
+
+        LinkedList<ArrayList<String>> result = new LinkedList<ArrayList<String>>();
+
+        StatementResult queryResult = executeQery(query);
+        while (queryResult.hasNext()) {
+            Record currentVal = queryResult.next();
+            ArrayList<String> recipeInfo = new ArrayList<>();
+            recipeInfo.add(currentVal.get(0).asString());
+            recipeInfo.add(currentVal.get(1).asString());
+            result.push(recipeInfo);
+        }
+        return result;
+    }
+
     // MATCH (n:User{id:"455157036"})-[:liked]->(m:Recipe)
     //    // RETURN m
 

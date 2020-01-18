@@ -60,7 +60,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
             String tockens[]= update.getMessage().getText().toLowerCase().split("\\s+");
 
             // parse the message and get the replies
-            ArrayList<SendMessage> messages = parseResult(tockens, update.getMessage().getChatId());
+            ArrayList<SendMessage> messages = parseResult(tockens, update.getMessage().getFrom().getId().toString(), update.getMessage().getChatId());
 
             // send all the messages
             for(SendMessage message : messages){
@@ -196,7 +196,7 @@ public class HungryMeBot extends TelegramLongPollingBot {
     }
 
     //private List<String> parseResult(String[] tokens){
-    private ArrayList<SendMessage> parseResult(String[] tokens, Long chatId){
+    private ArrayList<SendMessage> parseResult(String[] tokens,String userId, Long chatId){
         // keywords
         final String unique = "a";
         final String forTags = "for";
@@ -226,7 +226,17 @@ public class HungryMeBot extends TelegramLongPollingBot {
             if(!tokens[i].equals(forTags))
                 tags.add(tokens[i]);
         }
-        recipesId = _graphDB.getRecipes(ingredients, tags);
+
+        if(tokens[0].equals("liked") || tokens[0].equals("favorite") || tokens[0].equals(addFav)){
+            recipesId = _graphDB.getUserFavoriteRecipes(userId );
+        }else if (tokens[0].equals("suprise") || tokens[0].equals("¯\\_(ツ)_/¯")){
+            recipesId = _graphDB.getNewRecipesBasedOnUserLikes(userId);
+            if(recipesId.size() == 0){
+                recipesId = _graphDB.getMostUnseenAppreciatedRecipes(userId);
+            }
+        }else {
+            recipesId = _graphDB.getRecipes(ingredients, tags);
+        }
 
         if(recipesId.isEmpty()){
             SendMessage message = new SendMessage();
