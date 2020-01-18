@@ -229,12 +229,19 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 tags.add(tokens[i]);
         }
 
-        if(tokens[0].toLowerCase().equals("liked") || tokens[0].toLowerCase().equals("favorite") || tokens[0].equals(addFav)){
+        if(tokens[0].toLowerCase().equals("liked") ||
+                tokens[0].toLowerCase().equals("favorite") ||
+                tokens[0].toLowerCase().equals("favorites") ||
+                tokens[0].toLowerCase().equals("favs") ||
+                tokens[0].equals(addFav)){
             recipesId = _graphDB.getUserFavoriteRecipes(userId );
         }else if (tokens[0].toLowerCase().equals("surprise") || tokens[0].equals("¯\\_(ツ)_/¯")){
             recipesId = _graphDB.getNewRecipesBasedOnUserLikes(userId);
             if(recipesId.size() == 0){
                 recipesId = _graphDB.getMostUnseenAppreciatedRecipes(userId);
+            }
+            if(recipesId.size() == 0){
+                recipesId = _graphDB.getMostAppreciatedRecipes();
             }
         }else {
             recipesId = _graphDB.getRecipes(ingredients, tags, userId, getSpeedLevel(tokens));
