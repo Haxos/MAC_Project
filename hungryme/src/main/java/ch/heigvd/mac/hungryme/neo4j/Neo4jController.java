@@ -209,25 +209,37 @@ public class Neo4jController implements ch.heigvd.mac.hungryme.interfaces.GraphD
         if(!tags.isEmpty()){
             tagNames = "UNWIND " + CollectionToString(tags) + " AS tagName\n";
         }
-
+/*
+UNWIND ["clove garlic", "milk", "salt"] AS ingredientName
+UNWIND ["pie", "breakfast", "fruit"] AS tagName
+MATCH (r:Recipe)-->(i:Ingredient)
+WHERE i.name CONTAINS  ingredientName
+MATCH (r:Recipe)-->(t:Tag{name: tagName})
+WHERE t.name CONTAINS  tagName
+RETURN r.id, r.name, collect(i.name) AS otherIngredients, collect(t.name) AS TagName
+ORDER BY size(collect(i.name) + collect(t.name)) DESC*/
         if(!ingredients.isEmpty() && !tags.isEmpty()){ // we have ingredients and tags !
             query = query.concat(ingredientsNames);
             query = query.concat(tagNames);
-            query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
-                    "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+            query = query.concat("MATCH (r:Recipe)-->(i:Ingredient)\n" +
+                    "        WHERE i.name CONTAINS  ingredientName\n" +
+                    "        MATCH (r:Recipe)-->(t:Tag)\n" +
+                    "        WHERE t.name CONTAINS tagName\n" +
                             speed +
-                    "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients, collect(t.name) AS TagName\n" +
-                    "        ORDER BY size(collect(ingredient.name) + collect(t.name)) DESC");
+                    "        RETURN r.id, r.name, collect(i.name) AS otherIngredients, collect(t.name) AS TagName\n" +
+                    "        ORDER BY size(collect(i.name) + collect(t.name)) DESC");
         }else if(!ingredients.isEmpty() && tags.isEmpty()){ // we only have ingredients
             query = query.concat(ingredientsNames);
-            query = query.concat("MATCH (r:Recipe)-->(ingredient {name: ingredientName})\n" +
+            query = query.concat("MATCH (r:Recipe)-->(i:Ingredient)\n" +
+                    "        WHERE i.name CONTAINS  ingredientName\n" +
                             speed +
-                    "        RETURN r.id, r.name, collect(ingredient.name) AS otherIngredients\n" +
-                    "        ORDER BY size(collect(ingredient.name)) DESC");
+                    "        RETURN r.id, r.name, collect(i.name) AS otherIngredients\n" +
+                    "        ORDER BY size(collect(i.name)) DESC");
         }else if(ingredients.isEmpty() && !tags.isEmpty()){ // we only have tags !
             query = query.concat(tagNames);
             query = query.concat(
-                    "        MATCH (r:Recipe)-->(t:Tag{name: tagName})\n" +
+                    "        MATCH (r:Recipe)-->(t:Tag)\n" +
+                    "        WHERE t.name CONTAINS tagName\n" +
                             speed +
                     "        RETURN r.id, r.name, collect(t.name) AS TagName\n" +
                     "        ORDER BY size(collect(t.name)) DESC");
