@@ -404,33 +404,33 @@ public class HungryMeBot extends TelegramLongPollingBot {
                 "\n" +
                 "<b>What is HungyMe ?</b>\n" +
                 "Hungry me is a bot that allows you to search for recipes based on ingredients or tags.\n" +
-                "The recipes with the mots ingredients or tags will be proposed to you\n" +
-                "You can like, dislike or add each recipe to a favorite list\n" +
+                "The recipes with the most ingredients or tags will be proposed to you.\n" +
+                "You can: like, dislike or add each recipe to a favorite list.\n" +
                 "\n" +
                 "<b>How to use</b>\n" +
                 "The basic search works the following way:\n" +
                 "(a) {time : (very) fast/short} recipe(s) with {ingredients} for {tags}.\n" +
                 "\n" +
-                "<u>Eplications</u>\n" +
-                "<b>a</b> : (optionnal) when used, only one recipe will directly be displayes\n" +
-                "<b>{time : (very) fast/short}</b> : (optionnal) determins the maximum ammount of time a recipe cant take : a short recipe = 30 min a very short recipe = 50min\n" +
-                "<b>recipe(s)</b> : (optionnal) exists only to make the research ore friendly\n" +
+                "<u>Explications</u>\n" +
+                "<b>a</b> : (optional) when used, only one recipe will directly be displayed\n" +
+                "<b>{time : (very) fast/short}</b> : (optional) determine the maximum amount of time a recipe cant take: a short recipe = 30 min a very short recipe = 50min\n" +
+                "<b>recipe(s)</b> : (optional) exists only to make the research more friendly\n" +
                 "<b>with {ingredients}</b> : list the ingredients you want in your recipe\n" +
                 "<b>for {tags}</b> : list the tags that should represent the recipes you are looking for\n" +
-                "<i>In order to get a result, ou should use the keyword(s) <u>with</u> and/or  <u>for</u></i>\n" +
+                "<i>In order to get a result, you should use the keyword(s) <u>with</u> and/or  <u>for</u></i>\n" +
                 "\n" +
                 "<u>Examples</u>\n" +
                 "a recipe with pecans for snack\n" +
                 "fast recipe with garlic salt pepper\n" +
                 "\n" +
                 "<b>Options</b>\n" +
-                "You can like/dislike a recipe or add it to your favorites clicking iôn the buttons \uD83D\uDC4D \uD83D\uDC4E ❤️ that appear under the recipe\n" +
+                "You can like/dislike a recipe or add it to your favorites by clicking the icon buttons \uD83D\uDC4D \uD83D\uDC4E ❤️ that appear under the recipe\n" +
                 "To see the recipes in you favorite list, jus send ❤️ or <u>favs</u>\n" +
                 "\n" +
                 "<b>Surprise recipe</b>\n" +
                 "If you do not feel inspired for a recipe jus send <u>surprise</u>\n" +
-                "A lis of recipies that you haven't seen yet will appear!\n" +
-                "These recipes are based on the ones you likes or added to your favorite list !";
+                "A list of recipes that you haven't seen yet will appear!\n" +
+                "These recipes are based on the ones you likes or added to your favorite list!";
 
         SendMessage message = new SendMessage();
         message.setChatId(chatId); // long chatId
