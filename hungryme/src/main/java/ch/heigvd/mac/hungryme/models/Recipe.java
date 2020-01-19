@@ -1,7 +1,10 @@
 package ch.heigvd.mac.hungryme.models;
 
+import ch.heigvd.mac.hungryme.Utils;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 public class Recipe {
     private String _id;
